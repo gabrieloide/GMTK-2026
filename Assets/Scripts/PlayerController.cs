@@ -17,9 +17,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float handbrakeGrip = 40f;
     [SerializeField] private float driftFriction = 6f;
 
+    [Header("Knockback")]
+    [SerializeField] private float knockbackDrag = 20f;
+
     private Rigidbody rb;
-    private float currentSpeed;
+    public float currentSpeed;
     private Vector3 moveDirection;
+    private float knockbackTimer;
 
     void Start()
     {
@@ -28,8 +32,25 @@ public class PlayerController : MonoBehaviour
         moveDirection = transform.forward;
     }
 
+    public void ApplyKnockback(Vector3 direction, float speed, float duration)
+    {
+        if (rb == null) rb = GetComponent<Rigidbody>();
+
+        currentSpeed = 0f;
+        moveDirection = direction;
+        knockbackTimer = duration;
+        rb.linearVelocity = new Vector3(direction.x * speed, rb.linearVelocity.y, direction.z * speed);
+    }
+
     private void FixedUpdate()
     {
+        if (knockbackTimer > 0f)
+        {
+            knockbackTimer -= Time.fixedDeltaTime;
+            ApplyKnockbackDrag(Time.fixedDeltaTime);
+            return;
+        }
+
         Vector2 input = InputReader.Instance.MoveInput;
         Vector3 desiredDirection = new Vector3(input.x, 0f, input.y);
         bool hasInput = desiredDirection.sqrMagnitude > 0.01f;
@@ -43,6 +64,14 @@ public class PlayerController : MonoBehaviour
         Vector3 velocity = moveDirection * currentSpeed;
         velocity.y = rb.linearVelocity.y;
         rb.linearVelocity = velocity;
+    }
+
+    private void ApplyKnockbackDrag(float dt)
+    {
+        Vector3 velocity = rb.linearVelocity;
+        Vector3 flat = new Vector3(velocity.x, 0f, velocity.z);
+        flat = Vector3.MoveTowards(flat, Vector3.zero, knockbackDrag * dt);
+        rb.linearVelocity = new Vector3(flat.x, velocity.y, flat.z);
     }
 
     private void UpdateMoveDirection(float dt)

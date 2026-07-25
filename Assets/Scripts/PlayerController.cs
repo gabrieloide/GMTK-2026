@@ -10,7 +10,6 @@ public class PlayerController : MonoBehaviour
 
     [Header("Steering")]
     [SerializeField] private float turnSpeed = 140f;
-    [SerializeField] private float minSpeedToTurn = 1f;
 
     [Header("Drift")]
     [SerializeField] private float grip = 720f;
@@ -102,7 +101,7 @@ public class PlayerController : MonoBehaviour
 
     private void UpdateRotation(Vector3 desiredDirection, float dt)
     {
-        float speedFactor = Mathf.Clamp01(currentSpeed / Mathf.Max(minSpeedToTurn, 0.01f));
+        float speedFactor = Mathf.Clamp01(currentSpeed / maxSpeed);
         if (speedFactor <= 0f) return;
 
         Quaternion target = Quaternion.LookRotation(desiredDirection.normalized, Vector3.up);

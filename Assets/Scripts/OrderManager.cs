@@ -47,7 +47,9 @@ public class OrderManager : MonoBehaviour
             Debug.LogWarning("No active orders available.");
             return;
         }
-        if(Vector3.Distance(playerTransform.position, activesOrderHolder.Last().transform.position) < 1f && activesOrderHolder.Count == 1)
+
+        var currentOrderHolder = activesOrderHolder.Peek();
+        if (activesOrderHolder.Count == 1 && Vector3.Distance(playerTransform.position, GetPickupPoint(currentOrderHolder.transform)) < 1f)
         {
             AddOrder();
         }
@@ -70,20 +72,25 @@ public class OrderManager : MonoBehaviour
 
     public void AddOrder()
     {
-        var availableOrderHolders = orderTransform[UnityEngine.Random.Range(0, orderTransform.Count)];
-        activesOrderHolder.Enqueue(availableOrderHolders);
+        bool becomesCurrent = activesOrderHolder.Count == 0;
 
-        var availableOrderDestinations = orderDestination[UnityEngine.Random.Range(0, orderDestination.Count)];
-        activesOrderDestination.Enqueue(availableOrderDestinations);
+        var availableOrderHolders = orderTransform.Where(o => !activesOrderHolder.Contains(o)).ToList();
+        if (availableOrderHolders.Count == 0) availableOrderHolders = orderTransform;
+        var newOrderHolder = availableOrderHolders[UnityEngine.Random.Range(0, availableOrderHolders.Count)];
+        activesOrderHolder.Enqueue(newOrderHolder);
 
-        var currentOrderHolder = activesOrderHolder.Last();
-        var currentOrderDestination = activesOrderDestination.Last();
+        var availableOrderDestinations = orderDestination.Where(o => !activesOrderDestination.Contains(o)).ToList();
+        if (availableOrderDestinations.Count == 0) availableOrderDestinations = orderDestination;
+        var newOrderDestination = availableOrderDestinations[UnityEngine.Random.Range(0, availableOrderDestinations.Count)];
+        activesOrderDestination.Enqueue(newOrderDestination);
 
-        currentOrderHolder.orderDestination = currentOrderDestination;
-        currentOrderDestination.orderHolder = currentOrderHolder;
+        newOrderHolder.orderDestination = newOrderDestination;
+        newOrderDestination.orderHolder = newOrderHolder;
 
-        currentOrderHolder.isActive = true;
-        currentOrderDestination.isActive = true;
+        newOrderHolder.isActive = true;
+        newOrderHolder.isCurrent = becomesCurrent;
+        newOrderDestination.isActive = true;
+        newOrderDestination.isPickedUp = false;
 
         OnOrderAdded?.Invoke();
     }
@@ -94,6 +101,11 @@ public class OrderManager : MonoBehaviour
 
         activesOrderHolder.Dequeue();
         activesOrderDestination.Dequeue();
+
+        if (activesOrderHolder.Count > 0)
+        {
+            activesOrderHolder.Peek().isCurrent = true;
+        }
 
         AddOrder();
     }
@@ -109,19 +121,22 @@ public class OrderManager : MonoBehaviour
             Gizmos.color = Color.green;
             DrawWireCapsule(GetPickupPoint(order.transform), order.transform.rotation, Vector3.one * 8f);
 
-            if(order.isActive == false) continue;
+            if (order.orderDestination == null) continue;
 
-            Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(GetPickupPoint(order.transform), 0.5f);
+            if (order.isActive)
+            {
+                Gizmos.color = Color.green;
+                Gizmos.DrawWireSphere(GetPickupPoint(order.transform), 0.5f);
+            }
 
-            if(order.orderDestination == null) continue;
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(GetPickupPoint(order.orderDestination.transform), 0.5f);
+            if (order.orderDestination.isActive)
+            {
+                Gizmos.color = Color.red;
+                Gizmos.DrawWireSphere(GetPickupPoint(order.orderDestination.transform), 0.5f);
 
-            Gizmos.color = Color.turquoise;
-            Gizmos.DrawLine(GetPickupPoint(order.transform), GetPickupPoint(order.orderDestination.transform));
-
-
+                Gizmos.color = Color.turquoise;
+                Gizmos.DrawLine(GetPickupPoint(order.transform), GetPickupPoint(order.orderDestination.transform));
+            }
         }
     }
 }

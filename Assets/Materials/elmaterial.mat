@@ -115,8 +115,8 @@ Material:
     - _XRMotionVectorsPass: 1
     - _ZWrite: 1
     - _coloresolution: 8
-    - _colorresolution: 8
-    - _ditherspread: 0.1
+    - _colorresolution: 5.81
+    - _ditherspread: 0.09
     - _spread: 0.1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}

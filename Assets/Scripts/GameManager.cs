@@ -6,6 +6,9 @@ public class GameManager : MonoBehaviour
     public static Action OnGameOver;
     public bool isGameOver = false;
 
+    [SerializeField] private int scorePerDelivery = 100;
+    public int Score { get; private set; }
+
     public static GameManager Instance { get; private set; }
     private void Awake()
     {
@@ -17,5 +20,20 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
         }
+    }
+
+    private void OnEnable()
+    {
+        OrderManager.OnOrderFinished += AddScore;
+    }
+
+    private void OnDisable()
+    {
+        OrderManager.OnOrderFinished -= AddScore;
+    }
+
+    private void AddScore()
+    {
+        Score += scorePerDelivery;
     }
 }

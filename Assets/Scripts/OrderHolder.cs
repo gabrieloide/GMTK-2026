@@ -6,13 +6,14 @@ public class OrderHolder : MonoBehaviour
     public bool isCurrent = false;
     public OrderDestination orderDestination;
 
+    [SerializeField] private Renderer markerVisual;
 
     private void Update()
     {
+        if (markerVisual != null) markerVisual.enabled = isActive && isCurrent;
         if (!isActive || !isCurrent) return;
 
-        Physics.BoxCast(OrderManager.GetPickupPoint(transform), Vector3.one * 0.5f, transform.forward, out RaycastHit hit, transform.rotation, 0.1f);
-        if (hit.collider != null && hit.collider.CompareTag("Player"))
+        if (OrderManager.IsPlayerAtPoint(OrderManager.GetPickupPoint(transform), transform.rotation))
         {
             isActive = false;
             isCurrent = false;

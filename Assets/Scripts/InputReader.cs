@@ -9,9 +9,9 @@ namespace Game
 
         public Vector2 MoveInput => Actions == null ? Vector2.zero : Actions.Player.Move.ReadValue<Vector2>();
 
-        public bool JumpPressed => Actions != null && Actions.Player.Jump.WasPressedThisFrame();
+        public bool HandbrakeHeld => Actions != null && Actions.Player.Handbrake.IsPressed();
 
-        public bool HandbrakeHeld => Actions != null && Actions.Player.Jump.IsPressed();
+        public bool AcceleratePressed => Actions != null && Actions.Player.Accelerate.IsPressed();
 
         protected override void Awake()
         {

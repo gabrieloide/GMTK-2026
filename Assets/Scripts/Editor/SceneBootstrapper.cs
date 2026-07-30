@@ -8,6 +8,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Code.Scripts.Audio;
 
 /// <summary>
 /// One-shot scene setup for the delivery game. Every step is idempotent, so any of
@@ -29,6 +30,17 @@ public static class SceneBootstrapper
     private const string ArrowMaterialPath = "Assets/Materials/DeliveryArrow.mat";
     private const string ArrowTexturePath = "Assets/Textures/ArrowRenderTexture.renderTexture";
     private const string CarMeshPath = "Assets/3D/CAR-BASE.fbx";
+    private const string AudioDatabasePath = "Assets/Audio/AudioDatabase.asset";
+    private const string AudioResourcesFolder = "Assets/Resources/Audio";
+
+    // Every id an existing PlaySFX("...") call in the gameplay scripts refers to.
+    // Export a WAV with this exact name into AudioResourcesFolder and the package's
+    // own AudioAutoImporter picks it up automatically.
+    private static readonly string[] ExpectedSfxIds =
+    {
+        "order_pickup", "order_delivered", "time_bonus", "car_hit",
+        "game_over", "ui_restart", "order_new", "low_time_warning"
+    };
 
     // The city is ~585 units across and the car is ~9 units long, so markers have to
     // be big to read at all, and sit high enough to be seen over the sidewalks.
@@ -79,7 +91,7 @@ public static class SceneBootstrapper
     [MenuItem("Tools/GMTK/3 Strip Stray Order Components", priority = 3)]
     public static void StripStrayOrderComponents()
     {
-        var markersRoot = GameObject.Find(MarkersRootName);
+        var markersRoot = FindRootByName(MarkersRootName);
         int removed = 0;
 
         foreach (var holder in Object.FindObjectsByType<OrderHolder>(FindObjectsInactive.Include, FindObjectsSortMode.None))
@@ -111,7 +123,7 @@ public static class SceneBootstrapper
     [MenuItem("Tools/GMTK/5 Place Order Markers", priority = 5)]
     public static void PlaceOrderMarkers()
     {
-        if (GameObject.Find(MarkersRootName) != null)
+        if (FindRootByName(MarkersRootName) != null)
         {
             Debug.LogWarning($"[Bootstrap] '{MarkersRootName}' already exists - delete it first if you want to regenerate the markers.");
             return;
@@ -245,7 +257,7 @@ public static class SceneBootstrapper
             CollectSceneBounds(out var buildings, out var obstacles);
             var positions = FindOpenPositions(buildings, obstacles, WantedCarSpawnPoints, CarSpawnHeight, MinCarSpawnSeparation);
 
-            var existingRoot = GameObject.Find(CarSpawnRootName);
+            var existingRoot = FindRootByName(CarSpawnRootName);
             var root = existingRoot != null ? existingRoot : new GameObject(CarSpawnRootName);
             if (existingRoot == null) Undo.RegisterCreatedObjectUndo(root, "Create Car Spawn Points");
 
@@ -271,7 +283,7 @@ public static class SceneBootstrapper
     [MenuItem("Tools/GMTK/8 Build HUD Canvas", priority = 8)]
     public static void BuildHudCanvas()
     {
-        if (GameObject.Find(CanvasName) != null)
+        if (FindRootByName(CanvasName) != null)
         {
             Debug.Log("[Bootstrap] HUD canvas already exists - skipping.");
             return;
@@ -342,13 +354,13 @@ public static class SceneBootstrapper
     [MenuItem("Tools/GMTK/9 Build Delivery Arrow Compass", priority = 9)]
     public static void BuildDeliveryArrowCompass()
     {
-        if (GameObject.Find(ArrowRigName) != null)
+        if (FindRootByName(ArrowRigName) != null)
         {
             Debug.Log("[Bootstrap] Delivery arrow rig already exists - skipping.");
             return;
         }
 
-        var canvas = GameObject.Find(CanvasName);
+        var canvas = FindRootByName(CanvasName);
         if (canvas == null)
         {
             Debug.LogError("[Bootstrap] HUD canvas missing - run step 8 first.");
@@ -416,6 +428,42 @@ public static class SceneBootstrapper
         MarkDirty();
     }
 
+    [MenuItem("Tools/GMTK/10 Setup Audio Manager", priority = 10)]
+    public static void SetupAudioManager()
+    {
+        EnsureFolder("Assets/Audio");
+        EnsureFolder(AudioResourcesFolder);
+
+        var database = AssetDatabase.LoadAssetAtPath<AudioDatabase>(AudioDatabasePath);
+        if (database == null)
+        {
+            database = ScriptableObject.CreateInstance<AudioDatabase>();
+            AssetDatabase.CreateAsset(database, AudioDatabasePath);
+            Debug.Log($"[Bootstrap] Created '{AudioDatabasePath}'.");
+        }
+
+        var manager = EnsureComponentObject<AudioManager>("AudioManager");
+        SetPrivateRef(manager, "_database", database);
+
+        var missingIds = ExpectedSfxIds.Where(id => database.GetAudioData(id) == null).ToList();
+        if (missingIds.Count > 0)
+        {
+            Debug.LogWarning($"[Bootstrap] AudioDatabase is missing clips for: {string.Join(", ", missingIds)}. " +
+                $"Export WAVs with those exact names into '{AudioResourcesFolder}' - the package's own importer will register them.");
+        }
+
+        var playerObject = GameObject.FindGameObjectWithTag("Player");
+        if (playerObject != null && playerObject.GetComponent<PlayerAudio>() == null)
+        {
+            Undo.AddComponent<PlayerAudio>(playerObject);
+            Debug.Log("[Bootstrap] Added PlayerAudio to the Player - drag the engine_loop/tire_skid_loop clips onto it manually.");
+        }
+
+        AssetDatabase.SaveAssets();
+        MarkDirty();
+        Debug.Log("[Bootstrap] AudioManager wired to AudioDatabase. Remember to also drag engine/skid clips onto the Player's PlayerAudio component manually.");
+    }
+
     [MenuItem("Tools/GMTK/Run All", priority = 20)]
     public static void RunAll()
     {
@@ -428,6 +476,7 @@ public static class SceneBootstrapper
         ConfigureCarSpawner();
         BuildHudCanvas();
         BuildDeliveryArrowCompass();
+        SetupAudioManager();
 
         AssetDatabase.SaveAssets();
         Debug.Log("[Bootstrap] Run All finished. Save the scene (Ctrl+S) if everything looks right.");
@@ -583,6 +632,18 @@ public static class SceneBootstrapper
 
         // The root sits at the origin unrotated and unscaled, so world bounds are local bounds.
         return bounds;
+    }
+
+    // GameObject.Find only searches active objects, so if a root ever got deactivated
+    // the existence checks below would miss it and create a duplicate. This walks
+    // every transform (active or not) instead.
+    private static GameObject FindRootByName(string name)
+    {
+        foreach (var transform in Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (transform.parent == null && transform.name == name) return transform.gameObject;
+        }
+        return null;
     }
 
     private static T EnsureComponentObject<T>(string name) where T : Component

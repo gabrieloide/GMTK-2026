@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using Code.Scripts.Audio;
 
 
 public class OrderManager : MonoBehaviour
@@ -176,9 +177,11 @@ public class OrderManager : MonoBehaviour
 
         Debug.Log("Order Finished");
         OnOrderFinished?.Invoke();
+        AudioManager.Instance.PlaySFX("order_delivered");
 
         deliveriesCompleted++;
         OnTimeBonusAwarded?.Invoke(GetCurrentTier().timeBonus);
+        AudioManager.Instance.PlaySFX("time_bonus");
 
         activesOrderHolder.Dequeue();
         activesOrderDestination.Dequeue();
@@ -189,6 +192,7 @@ public class OrderManager : MonoBehaviour
         }
 
         AddOrder();
+        AudioManager.Instance.PlaySFX("order_new");
     }
     void OnDrawGizmos()
     {

@@ -1,0 +1,81 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 181112d7567425045903582327fb0c80, type: 3}
+  m_Name: AudioDatabase
+  m_EditorClassIdentifier: StarterTools.Runtime::Code.Scripts.Audio.AudioDatabase
+  audioDataList:
+  - id: car_hit
+    clip: {fileID: 8300000, guid: c2a4bfc0ee4f54df1858611485c2617d, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    audioMixerGroup: {fileID: 0}
+  - id: engine_loop
+    clip: {fileID: 8300000, guid: 14d3b79622b7947eeb9187aad8fec324, type: 3}
+    volume: 0.005
+    pitch: 1
+    loop: 0
+    audioMixerGroup: {fileID: 0}
+  - id: game_over
+    clip: {fileID: 8300000, guid: 7531f038e9d4a4efc8984dd1604a6ee3, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    audioMixerGroup: {fileID: 0}
+  - id: low_time_warning
+    clip: {fileID: 8300000, guid: f9e9864f3b6db4362b0b1efd11c05183, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    audioMixerGroup: {fileID: 0}
+  - id: order_delivered
+    clip: {fileID: 8300000, guid: 4527b479f8ce64b2faad03dc4fe5dcab, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    audioMixerGroup: {fileID: 0}
+  - id: order_new
+    clip: {fileID: 8300000, guid: 11cb8e725abcf4cf6bc549d19eaf6762, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    audioMixerGroup: {fileID: 0}
+  - id: order_pickup
+    clip: {fileID: 8300000, guid: aa90d01837255416e9bf585a13403103, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    audioMixerGroup: {fileID: 0}
+  - id: time_bonus
+    clip: {fileID: 8300000, guid: 7b0a394aa4a1c42688be02393c62f791, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    audioMixerGroup: {fileID: 0}
+  - id: tire_skid_loop
+    clip: {fileID: 8300000, guid: bcf9a2357fe934e609c35ee787c32b97, type: 3}
+    volume: 0.003
+    pitch: 1
+    loop: 0
+    audioMixerGroup: {fileID: 0}
+  - id: ui_restart
+    clip: {fileID: 8300000, guid: fabf05c14d3fa4d0382466fadffdc56c, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+    audioMixerGroup: {fileID: 0}
+  - id: tire_corner_loop
+    clip: {fileID: 8300000, guid: f9efd06c04abb445bb6bfd7ba04747a1, type: 3}
+    volume: 0.003
+    pitch: 1
+    loop: 0
+    audioMixerGroup: {fileID: 0}

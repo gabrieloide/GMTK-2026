@@ -7,6 +7,7 @@ public class PlayerController : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float maxSpeed = 12f;
     [SerializeField] private float acceleration = 8f;
+    [SerializeField] private float brakeDeceleration = 20f;
 
     [Header("Steering")]
     [SerializeField] private float turnSpeed = 140f;
@@ -24,11 +25,18 @@ public class PlayerController : MonoBehaviour
     private Vector3 moveDirection;
     private float knockbackTimer;
 
+    public float MaxSpeed => maxSpeed;
+    public float SpeedFactor01 => maxSpeed > 0f ? Mathf.Clamp01(currentSpeed / maxSpeed) : 0f;
+    public float DriftFactor01 { get; private set; }
+    public float TurnRate01 { get; private set; }
+    private float previousYaw;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
         moveDirection = transform.forward;
+        previousYaw = transform.eulerAngles.y;
     }
 
     public void ApplyKnockback(Vector3 direction, float speed, float duration)
@@ -52,13 +60,14 @@ public class PlayerController : MonoBehaviour
 
         Vector2 input = InputReader.Instance.MoveInput;
         Vector3 desiredDirection = new Vector3(input.x, 0f, input.y);
-        bool hasInput = desiredDirection.sqrMagnitude > 0.01f;
+        bool hasDirection = desiredDirection.sqrMagnitude > 0.01f;
         float dt = Time.fixedDeltaTime;
 
-        UpdateSpeed(hasInput, dt);
-        if (hasInput) UpdateRotation(desiredDirection, dt);
+        UpdateSpeed(hasDirection, desiredDirection, dt);
+        if (hasDirection) UpdateRotation(desiredDirection, dt);
         UpdateMoveDirection(dt);
         ApplyDriftFriction(dt);
+        UpdateTurnRate(dt);
 
         Vector3 velocity = moveDirection * currentSpeed;
         velocity.y = rb.linearVelocity.y;
@@ -88,14 +97,31 @@ public class PlayerController : MonoBehaviour
     private void ApplyDriftFriction(float dt)
     {
         float slide = Mathf.Clamp01(Vector3.Angle(moveDirection, transform.forward) / 90f);
+        DriftFactor01 = slide;
         if (slide <= 0f) return;
 
         currentSpeed = Mathf.MoveTowards(currentSpeed, 0f, driftFriction * slide * dt);
     }
 
-    private void UpdateSpeed(bool hasInput, float dt)
+    private void UpdateTurnRate(float dt)
     {
-        float target = hasInput ? maxSpeed : 0f;
+        float currentYaw = transform.eulerAngles.y;
+        float delta = Mathf.Abs(Mathf.DeltaAngle(previousYaw, currentYaw));
+        previousYaw = currentYaw;
+        TurnRate01 = turnSpeed > 0f ? Mathf.Clamp01((delta / dt) / turnSpeed) : 0f;
+    }
+
+    private void UpdateSpeed(bool hasDirection, Vector3 desiredDirection, float dt)
+    {
+        bool isBraking = hasDirection && currentSpeed > 0.01f && Vector3.Dot(desiredDirection.normalized, moveDirection) < -0.5f;
+        if (isBraking)
+        {
+            currentSpeed = Mathf.MoveTowards(currentSpeed, 0f, brakeDeceleration * dt);
+            return;
+        }
+
+        bool accelerating = hasDirection && InputReader.Instance.AcceleratePressed;
+        float target = accelerating ? maxSpeed : 0f;
         currentSpeed = Mathf.MoveTowards(currentSpeed, target, acceleration * dt);
     }
 

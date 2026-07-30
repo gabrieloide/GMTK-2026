@@ -1,4 +1,5 @@
 using UnityEngine;
+using Code.Scripts.Audio;
 
 public class PlayerCollision : MonoBehaviour
 {
@@ -25,5 +26,6 @@ public class PlayerCollision : MonoBehaviour
         opositeDirection.Normalize();
 
         playerController.ApplyKnockback(opositeDirection, knockbackForce, knockbackDuration);
+        AudioManager.Instance.PlaySFX("car_hit");
     }
 }

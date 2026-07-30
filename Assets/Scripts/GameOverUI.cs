@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using Code.Scripts.Audio;
 
 public class GameOverUI : MonoBehaviour
 {
@@ -39,10 +40,12 @@ public class GameOverUI : MonoBehaviour
         shownAt = Time.unscaledTime;
         if (gameOverPanel != null) gameOverPanel.SetActive(true);
         if (finalScoreText != null && GameManager.Instance != null) finalScoreText.text = $"Final Score: {GameManager.Instance.Score}";
+        AudioManager.Instance.PlaySFX("game_over");
     }
 
     public void Restart()
     {
+        AudioManager.Instance.PlaySFX("ui_restart");
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

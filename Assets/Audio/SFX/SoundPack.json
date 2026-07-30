@@ -1,0 +1,241 @@
+{
+  "sounds": [
+    {
+      "baseSound": {
+        "soundName": "order_pickup",
+        "waveType": 0,
+        "sustainTime": 0.08,
+        "sustainPunch": 0.3,
+        "decayTime": 0.12,
+        "startFrequency": 0.55,
+        "slide": 0.25,
+        "dutyCycle": 0.4,
+        "masterGain": 0.55
+      },
+      "layers": [
+        {
+          "soundName": "order_pickup_click",
+          "waveType": 3,
+          "sustainTime": 0.02,
+          "decayTime": 0.03,
+          "startFrequency": 0.4,
+          "hpCutoffFrequency": 0.3,
+          "delay": 0.0,
+          "masterGain": 0.2
+        }
+      ]
+    },
+    {
+      "baseSound": {
+        "soundName": "order_delivered",
+        "waveType": 0,
+        "sustainTime": 0.12,
+        "sustainPunch": 0.4,
+        "decayTime": 0.25,
+        "startFrequency": 0.62,
+        "slide": 0.35,
+        "frequencyMult": 0.3,
+        "changeSpeed": 0.4,
+        "masterGain": 0.6
+      },
+      "layers": [
+        {
+          "soundName": "order_delivered_shimmer",
+          "waveType": 2,
+          "sustainTime": 0.15,
+          "decayTime": 0.3,
+          "startFrequency": 0.85,
+          "slide": 0.2,
+          "delay": 0.05,
+          "masterGain": 0.35
+        }
+      ]
+    },
+    {
+      "baseSound": {
+        "soundName": "time_bonus",
+        "waveType": 2,
+        "sustainTime": 0.15,
+        "decayTime": 0.35,
+        "startFrequency": 0.7,
+        "slide": 0.15,
+        "lfoTarget": 1,
+        "lfoWaveform": 0,
+        "lfoSpeed": 0.5,
+        "lfoDepth": 0.3,
+        "masterGain": 0.5
+      },
+      "layers": [
+        {
+          "soundName": "time_bonus_harmonic",
+          "waveType": 2,
+          "sustainTime": 0.12,
+          "decayTime": 0.3,
+          "startFrequency": 0.95,
+          "slide": 0.15,
+          "delay": 0.08,
+          "masterGain": 0.3
+        }
+      ]
+    },
+    {
+      "baseSound": {
+        "soundName": "car_hit",
+        "waveType": 3,
+        "sustainTime": 0.05,
+        "sustainPunch": 0.6,
+        "decayTime": 0.18,
+        "startFrequency": 0.25,
+        "slide": -0.4,
+        "lpCutoffFrequency": 0.5,
+        "hpCutoffFrequency": 0.05,
+        "masterGain": 0.7
+      },
+      "layers": [
+        {
+          "soundName": "car_hit_thump",
+          "waveType": 0,
+          "sustainTime": 0.04,
+          "sustainPunch": 0.5,
+          "decayTime": 0.1,
+          "startFrequency": 0.12,
+          "slide": -0.2,
+          "delay": 0.0,
+          "masterGain": 0.45
+        }
+      ]
+    },
+    {
+      "baseSound": {
+        "soundName": "game_over",
+        "waveType": 1,
+        "sustainTime": 0.25,
+        "decayTime": 0.55,
+        "startFrequency": 0.45,
+        "slide": -0.35,
+        "deltaSlide": -0.05,
+        "depth": 0.15,
+        "speed": 0.2,
+        "masterGain": 0.55
+      },
+      "layers": [
+        {
+          "soundName": "game_over_sub",
+          "waveType": 2,
+          "sustainTime": 0.3,
+          "decayTime": 0.5,
+          "startFrequency": 0.25,
+          "slide": -0.25,
+          "delay": 0.1,
+          "masterGain": 0.35
+        }
+      ]
+    },
+    {
+      "baseSound": {
+        "soundName": "ui_restart",
+        "waveType": 0,
+        "sustainTime": 0.03,
+        "decayTime": 0.05,
+        "startFrequency": 0.5,
+        "dutyCycle": 0.5,
+        "masterGain": 0.4
+      },
+      "layers": []
+    },
+    {
+      "baseSound": {
+        "soundName": "order_new",
+        "waveType": 2,
+        "attackTime": 0.02,
+        "sustainTime": 0.06,
+        "decayTime": 0.15,
+        "startFrequency": 0.45,
+        "slide": 0.1,
+        "masterGain": 0.35
+      },
+      "layers": []
+    },
+    {
+      "baseSound": {
+        "soundName": "low_time_warning",
+        "waveType": 0,
+        "sustainTime": 0.05,
+        "decayTime": 0.06,
+        "startFrequency": 0.75,
+        "rate": 0.35,
+        "dutyCycle": 0.5,
+        "masterGain": 0.6
+      },
+      "layers": []
+    },
+    {
+      "baseSound": {
+        "soundName": "engine_loop",
+        "waveType": 0,
+        "sustainTime": 0.9,
+        "decayTime": 0.05,
+        "startFrequency": 0.18,
+        "dutyCycle": 0.55,
+        "lfoTarget": 4,
+        "lfoWaveform": 0,
+        "lfoSpeed": 0.15,
+        "lfoDepth": 0.1,
+        "lpCutoffFrequency": 0.4,
+        "resonance": 0.1,
+        "masterGain": 0.45
+      },
+      "layers": [
+        {
+          "soundName": "engine_loop_sub",
+          "waveType": 3,
+          "sustainTime": 0.9,
+          "decayTime": 0.05,
+          "startFrequency": 0.08,
+          "lpCutoffFrequency": 0.2,
+          "delay": 0.0,
+          "masterGain": 0.15
+        }
+      ]
+    },
+    {
+      "baseSound": {
+        "soundName": "tire_skid_loop",
+        "waveType": 3,
+        "sustainTime": 0.9,
+        "decayTime": 0.0,
+        "startFrequency": 0.45,
+        "hpCutoffFrequency": 0.2,
+        "lpCutoffFrequency": 0.55,
+        "resonance": 0.55,
+        "masterGain": 0.45
+      },
+      "layers": [
+        {
+          "soundName": "tire_skid_loop_scrape",
+          "waveType": 3,
+          "sustainTime": 0.9,
+          "decayTime": 0.0,
+          "startFrequency": 0.3,
+          "hpCutoffFrequency": 0.1,
+          "lpCutoffFrequency": 0.35,
+          "delay": 0.0,
+          "masterGain": 0.3
+        }
+      ]
+    },
+    {
+      "baseSound": {
+        "soundName": "tire_corner_loop",
+        "waveType": 3,
+        "sustainTime": 0.9,
+        "decayTime": 0.0,
+        "startFrequency": 0.2,
+        "hpCutoffFrequency": 0.08,
+        "lpCutoffFrequency": 0.22,
+        "masterGain": 0.25
+      },
+      "layers": []
+    }
+  ]
+}

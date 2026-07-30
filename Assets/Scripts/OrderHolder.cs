@@ -1,4 +1,5 @@
 using UnityEngine;
+using Code.Scripts.Audio;
 
 public class OrderHolder : MonoBehaviour
 {
@@ -18,6 +19,7 @@ public class OrderHolder : MonoBehaviour
             isActive = false;
             isCurrent = false;
             if (orderDestination != null) orderDestination.isPickedUp = true;
+            AudioManager.Instance.PlaySFX("order_pickup");
         }
     }
 }

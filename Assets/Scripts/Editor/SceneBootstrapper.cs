@@ -29,6 +29,8 @@ public static class SceneBootstrapper
     private const string DropoffMaterialPath = "Assets/Materials/OrderDropoffMarker.mat";
     private const string ArrowMaterialPath = "Assets/Materials/DeliveryArrow.mat";
     private const string ArrowTexturePath = "Assets/Textures/ArrowRenderTexture.renderTexture";
+    private const string ArrowCompassMaterialPath = "Assets/Materials/ArrowCompassUI.mat";
+    private const string ArrowCompassShaderName = "GMTK/UI Render Texture Key";
     private const string CarMeshPath = "Assets/3D/CAR-BASE.fbx";
     private const string AudioDatabasePath = "Assets/Audio/AudioDatabase.asset";
     private const string AudioResourcesFolder = "Assets/Resources/Audio";
@@ -420,6 +422,7 @@ public static class SceneBootstrapper
         compassRect.sizeDelta = new Vector2(150f, 150f);
         var rawImage = compass.AddComponent<RawImage>();
         rawImage.texture = renderTexture;
+        rawImage.material = EnsureArrowCompassMaterial();
 
         var controller = rig.AddComponent<DeliveryArrowController>();
         SetPrivateRef(controller, "arrowModel", arrowModel.transform);
@@ -692,6 +695,27 @@ public static class SceneBootstrapper
         if (material.HasProperty("_Color")) material.SetColor("_Color", color);
 
         AssetDatabase.CreateAsset(material, path);
+        return material;
+    }
+
+    // The compass RawImage needs the keying shader: URP leaves the arrow camera's
+    // transparent clear colour with an opaque alpha, so a plain UI material draws
+    // the render texture's background as a black square.
+    private static Material EnsureArrowCompassMaterial()
+    {
+        var existing = AssetDatabase.LoadAssetAtPath<Material>(ArrowCompassMaterialPath);
+        if (existing != null) return existing;
+
+        var shader = Shader.Find(ArrowCompassShaderName);
+        if (shader == null)
+        {
+            Debug.LogWarning($"[Bootstrap] Shader '{ArrowCompassShaderName}' not found - the compass will keep its black background.");
+            return null;
+        }
+
+        EnsureFolder("Assets/Materials");
+        var material = new Material(shader) { name = "ArrowCompassUI" };
+        AssetDatabase.CreateAsset(material, ArrowCompassMaterialPath);
         return material;
     }
 

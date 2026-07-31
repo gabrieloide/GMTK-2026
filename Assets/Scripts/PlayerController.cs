@@ -9,8 +9,20 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float acceleration = 8f;
     [SerializeField] private float brakeDeceleration = 20f;
 
+    [Tooltip("How opposed to the current heading WASD has to be to count as braking " +
+             "instead of steering. -1 = only dead backwards, 0 = anything past sideways.")]
+    [SerializeField, Range(-1f, 0f)] private float brakeInputAlignment = -0.8f;
+
+    [Tooltip("On: braking beats the throttle, so pressing the opposite key stops the " +
+             "car without releasing accelerate. Off: the throttle has to be released.")]
+    [SerializeField] private bool brakeWhileAccelerating = true;
+
     [Header("Steering")]
     [SerializeField] private float turnSpeed = 140f;
+
+    [Tooltip("Steering authority given while the throttle is held even at a standstill, " +
+             "so the car pulls away towards WASD instead of driving off in its old heading.")]
+    [SerializeField, Range(0f, 1f)] private float throttleTurnAssist = 0.35f;
 
     [Header("Drift")]
     [SerializeField] private float grip = 720f;
@@ -63,8 +75,22 @@ public class PlayerController : MonoBehaviour
         bool hasDirection = desiredDirection.sqrMagnitude > 0.01f;
         float dt = Time.fixedDeltaTime;
 
-        UpdateSpeed(hasDirection, desiredDirection, dt);
-        if (hasDirection) UpdateRotation(desiredDirection, dt);
+        // Braking is inferred from the stick, so the cone has to be narrow enough that
+        // a hard turn is never mistaken for it. Mid-drift the nose and the velocity
+        // point somewhere different - opposing either one counts, otherwise the brake
+        // would stop answering exactly when the car is sliding.
+        bool canBrake = brakeWhileAccelerating || !InputReader.Instance.AcceleratePressed;
+        float opposition = hasDirection
+            ? Mathf.Min(Vector3.Dot(desiredDirection.normalized, moveDirection),
+                        Vector3.Dot(desiredDirection.normalized, transform.forward))
+            : 0f;
+        bool isBraking = canBrake && hasDirection && currentSpeed > 0.01f &&
+                         opposition <= brakeInputAlignment;
+
+        UpdateSpeed(isBraking, dt);
+        // Steering is suppressed while braking: otherwise pressing back would swing
+        // the car around towards the key instead of reading as a brake.
+        if (hasDirection && !isBraking) UpdateRotation(desiredDirection, dt);
         UpdateMoveDirection(dt);
         ApplyDriftFriction(dt);
         UpdateTurnRate(dt);
@@ -111,23 +137,26 @@ public class PlayerController : MonoBehaviour
         TurnRate01 = turnSpeed > 0f ? Mathf.Clamp01((delta / dt) / turnSpeed) : 0f;
     }
 
-    private void UpdateSpeed(bool hasDirection, Vector3 desiredDirection, float dt)
+    private void UpdateSpeed(bool isBraking, float dt)
     {
-        bool isBraking = hasDirection && currentSpeed > 0.01f && Vector3.Dot(desiredDirection.normalized, moveDirection) < -0.5f;
+        // Steering back into the car is the brake, and it beats the throttle: holding
+        // the accelerate button must not stop it from working.
         if (isBraking)
         {
             currentSpeed = Mathf.MoveTowards(currentSpeed, 0f, brakeDeceleration * dt);
             return;
         }
 
-        bool accelerating = hasDirection && InputReader.Instance.AcceleratePressed;
-        float target = accelerating ? maxSpeed : 0f;
+        // Otherwise the throttle is the accelerate button on its own: the car pulls
+        // away along its own nose, and WASD only decides where that nose points.
+        float target = InputReader.Instance.AcceleratePressed ? maxSpeed : 0f;
         currentSpeed = Mathf.MoveTowards(currentSpeed, target, acceleration * dt);
     }
 
     private void UpdateRotation(Vector3 desiredDirection, float dt)
     {
         float speedFactor = Mathf.Clamp01(currentSpeed / maxSpeed);
+        if (InputReader.Instance.AcceleratePressed) speedFactor = Mathf.Max(speedFactor, throttleTurnAssist);
         if (speedFactor <= 0f) return;
 
         Quaternion target = Quaternion.LookRotation(desiredDirection.normalized, Vector3.up);

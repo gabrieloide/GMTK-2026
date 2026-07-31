@@ -23,6 +23,12 @@ public class OrderManager : MonoBehaviour
     // driving past at speed reliably registers.
     [SerializeField] private Vector3 detectionHalfExtents = new Vector3(3f, 10f, 3f);
 
+    [Header("Gizmos")]
+    [SerializeField] private bool drawTargetGizmo = true;
+    [SerializeField] private float targetGizmoHeight = 30f;
+    [SerializeField] private Color pickupGizmoColor = new Color(0.2f, 1f, 0.4f);
+    [SerializeField] private Color dropoffGizmoColor = new Color(1f, 0.4f, 0.1f);
+
     [SerializeField]
     private DifficultyTier[] difficultyTiers = new DifficultyTier[]
     {
@@ -88,7 +94,9 @@ public class OrderManager : MonoBehaviour
 
     public static Vector3 GetPickupPoint(Transform target)
     {
-        return target.position + target.TransformDirection(Vector3.forward + Instance.offset);
+        // Instance is null while gizmos draw in edit mode, so fall back to no offset.
+        Vector3 offset = Instance != null ? Instance.offset : Vector3.zero;
+        return target.position + target.TransformDirection(Vector3.forward + offset);
     }
 
     public static bool IsPlayerAtPoint(Vector3 point, Quaternion rotation)
@@ -103,14 +111,22 @@ public class OrderManager : MonoBehaviour
 
     public Vector3 GetCurrentTargetPosition()
     {
-        if (activesOrderHolder.Count == 0) return transform.position;
-
-        var holder = activesOrderHolder.Peek();
-        var destination = activesOrderDestination.Count > 0 ? activesOrderDestination.Peek() : null;
-
-        if (destination != null && destination.isPickedUp) return GetPickupPoint(destination.transform);
-        return GetPickupPoint(holder.transform);
+        var target = GetCurrentTargetTransform();
+        return target == null ? transform.position : GetPickupPoint(target);
     }
+
+    // The marker the player has to reach right now: the destination once the
+    // parcel is on board, the holder while it still has to be picked up.
+    public Transform GetCurrentTargetTransform()
+    {
+        if (activesOrderHolder.Count == 0) return null;
+
+        var destination = activesOrderDestination.Count > 0 ? activesOrderDestination.Peek() : null;
+        if (destination != null && destination.isPickedUp) return destination.transform;
+        return activesOrderHolder.Peek().transform;
+    }
+
+    public bool IsCarryingParcel => activesOrderDestination.Count > 0 && activesOrderDestination.Peek().isPickedUp;
 
     private DifficultyTier GetCurrentTier()
     {
@@ -196,7 +212,7 @@ public class OrderManager : MonoBehaviour
     }
     void OnDrawGizmos()
     {
-
+        DrawCurrentTargetGizmo();
 
         if(orderTransform == null) return;
         foreach (var order in orderTransform)
@@ -223,5 +239,39 @@ public class OrderManager : MonoBehaviour
                 Gizmos.DrawLine(GetPickupPoint(order.transform), GetPickupPoint(order.orderDestination.transform));
             }
         }
+    }
+
+    // Beacon over whatever the player has to reach right now, so the objective is
+    // findable in the scene view without hunting through the marker list.
+    private void DrawCurrentTargetGizmo()
+    {
+        if (!drawTargetGizmo || !Application.isPlaying) return;
+
+        var target = GetCurrentTargetTransform();
+        if (target == null) return;
+
+        bool carrying = IsCarryingParcel;
+        Vector3 point = GetPickupPoint(target);
+        Vector3 top = point + Vector3.up * targetGizmoHeight;
+
+        Gizmos.color = carrying ? dropoffGizmoColor : pickupGizmoColor;
+        Gizmos.DrawLine(point, top);
+        Gizmos.DrawWireSphere(point, 1f);
+        Gizmos.DrawWireSphere(top, 1.5f);
+
+        // The volume OnFinishOrder actually tests against, so a marker that never
+        // triggers is visibly a marker the car cannot overlap.
+        Gizmos.matrix = Matrix4x4.TRS(point, target.rotation, Vector3.one);
+        Gizmos.DrawWireCube(Vector3.zero, detectionHalfExtents * 2f);
+        Gizmos.matrix = Matrix4x4.identity;
+
+        if (playerTransform != null) Gizmos.DrawLine(playerTransform.position, point);
+
+#if UNITY_EDITOR
+        float distance = playerTransform != null ? Vector3.Distance(playerTransform.position, point) : 0f;
+        string label = carrying ? "ENTREGA" : "RECOGIDA";
+        UnityEditor.Handles.color = Gizmos.color;
+        UnityEditor.Handles.Label(top + Vector3.up * 2f, $"{label}  ({distance:0} m)");
+#endif
     }
 }

@@ -17,6 +17,12 @@ using Code.Scripts.Audio;
 public static class SceneBootstrapper
 {
     private const string MarkersRootName = "OrderPoints";
+
+    // Which building of each city block plays which role in the delivery loop.
+    private const string PickupBuildingId = "building7";
+    private static readonly string[] DropoffBuildingIds = { "building2", "building4" };
+    private const string BuildingMarkerName = "OrderPoint";
+
     private const string CarSpawnRootName = "CarSpawnPoints";
     private const string ArrowRigName = "DeliveryArrowRig";
     private const string ArrowLayerName = "ArrowUI";
@@ -98,14 +104,14 @@ public static class SceneBootstrapper
 
         foreach (var holder in Object.FindObjectsByType<OrderHolder>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
-            if (IsUnderRoot(holder.transform, markersRoot)) continue;
+            if (IsUnderRoot(holder.transform, markersRoot) || IsBuildingOrderPoint(holder.transform)) continue;
             Undo.DestroyObjectImmediate(holder);
             removed++;
         }
 
         foreach (var destination in Object.FindObjectsByType<OrderDestination>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
-            if (IsUnderRoot(destination.transform, markersRoot)) continue;
+            if (IsUnderRoot(destination.transform, markersRoot) || IsBuildingOrderPoint(destination.transform)) continue;
             Undo.DestroyObjectImmediate(destination);
             removed++;
         }
@@ -431,6 +437,115 @@ public static class SceneBootstrapper
         MarkDirty();
     }
 
+    /// <summary>
+    /// Ties the order loop to the city itself: every building7 becomes a shop the player
+    /// picks up from, every building2/building4 a place to deliver to. The marker prefab
+    /// is parented to the building but parked on the street side of its bounds, because
+    /// OrderManager tests a box at the marker and a marker inside a wall can never be
+    /// reached by the car.
+    /// </summary>
+    [MenuItem("Tools/GMTK/11 Assign Order Points To Buildings", priority = 11)]
+    public static void AssignOrderPointsToBuildings()
+    {
+        var holderPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(HolderMarkerPath);
+        var destinationPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(DestinationMarkerPath);
+        if (holderPrefab == null || destinationPrefab == null)
+        {
+            Debug.LogError("[Bootstrap] Order marker prefabs missing - run step 4 first.");
+            return;
+        }
+
+        CollectSceneBounds(out _, out var obstacles);
+
+        int pickups = 0, dropoffs = 0, walledIn = 0, alreadyDone = 0;
+        foreach (var building in Object.FindObjectsByType<Transform>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+        {
+            bool isPickup = MatchesBuilding(building.name, PickupBuildingId);
+            bool isDropoff = !isPickup && DropoffBuildingIds.Any(id => MatchesBuilding(building.name, id));
+            if (!isPickup && !isDropoff) continue;
+
+            if (building.Find(BuildingMarkerName) != null)
+            {
+                alreadyDone++;
+                continue;
+            }
+
+            var renderers = building.GetComponentsInChildren<MeshRenderer>();
+            if (renderers.Length == 0) continue;
+
+            var bounds = renderers[0].bounds;
+            for (int i = 1; i < renderers.Length; i++) bounds.Encapsulate(renderers[i].bounds);
+
+            if (!TryFindStreetSide(bounds, obstacles, out var spot, out var facing))
+            {
+                walledIn++;
+                continue;
+            }
+
+            var prefab = isPickup ? holderPrefab : destinationPrefab;
+            var marker = (GameObject)PrefabUtility.InstantiatePrefab(prefab, building);
+            marker.name = BuildingMarkerName;
+            marker.transform.SetPositionAndRotation(spot, Quaternion.LookRotation(facing, Vector3.up));
+            Undo.RegisterCreatedObjectUndo(marker, "Create Building Order Point");
+
+            if (isPickup) pickups++; else dropoffs++;
+        }
+
+        Debug.Log($"[Bootstrap] Order points: {pickups} shop(s) on '{PickupBuildingId}', " +
+            $"{dropoffs} dropoff(s) on {string.Join("/", DropoffBuildingIds)}. " +
+            $"Skipped {alreadyDone} already done and {walledIn} with no reachable street side.");
+        MarkDirty();
+    }
+
+    private static bool MatchesBuilding(string name, string buildingId)
+    {
+        // Instances come through as "building7" or "building7 (3)", never "building70".
+        var lowered = name.ToLowerInvariant();
+        if (!lowered.StartsWith(buildingId)) return false;
+        return lowered.Length == buildingId.Length || !char.IsDigit(lowered[buildingId.Length]);
+    }
+
+    /// <summary>
+    /// Picks the cardinal side of the building with the most open ground in front of it,
+    /// i.e. the one facing a street rather than the next building over.
+    /// </summary>
+    private static bool TryFindStreetSide(Bounds bounds, List<Bounds> obstacles, out Vector3 spot, out Vector3 facing)
+    {
+        spot = bounds.center;
+        facing = Vector3.forward;
+
+        float bestClearance = float.MinValue;
+        foreach (var direction in Cardinals)
+        {
+            float reach = Mathf.Abs(Vector3.Dot(bounds.extents, direction)) + StreetMargin;
+            var candidate = bounds.center + direction * reach;
+            candidate.y = MarkerHeight;
+
+            // The building's own bounds would cap every side at StreetMargin and flatten
+            // the ranking, so score against the rest of the city only.
+            float clearance = float.MaxValue;
+            foreach (var other in obstacles)
+            {
+                if (other.center == bounds.center && other.size == bounds.size) continue;
+                clearance = Mathf.Min(clearance, HorizontalDistanceToBounds(candidate, other));
+            }
+
+            if (clearance <= bestClearance) continue;
+            bestClearance = clearance;
+            spot = candidate;
+            facing = direction;
+        }
+
+        return bestClearance >= MinClearance;
+    }
+
+    // Markers parented to a building are the building-driven order points, not leftovers.
+    private static bool IsBuildingOrderPoint(Transform transform)
+    {
+        var parent = transform.parent;
+        return parent != null && parent.name.ToLowerInvariant().StartsWith("building");
+    }
+
     [MenuItem("Tools/GMTK/10 Setup Audio Manager", priority = 10)]
     public static void SetupAudioManager()
     {
@@ -474,7 +589,9 @@ public static class SceneBootstrapper
         CreateManagers();
         StripStrayOrderComponents();
         CreateOrderMarkerPrefabs();
-        PlaceOrderMarkers();
+        // Buildings drive the order loop now; step 5 stays on the menu for the old
+        // free-standing markers, but running both would double up the order points.
+        AssignOrderPointsToBuildings();
         CreateCarObstaclePrefab();
         ConfigureCarSpawner();
         BuildHudCanvas();

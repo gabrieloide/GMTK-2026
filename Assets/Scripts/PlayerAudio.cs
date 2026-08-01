@@ -7,6 +7,7 @@ public class PlayerAudio : MonoBehaviour
     [SerializeField] private AudioClip engineClip;
     [SerializeField] private AudioClip skidClip;
     [SerializeField] private AudioClip cornerClip;
+    [SerializeField] private AudioClip boostClip;
 
     [Header("Engine")]
     [SerializeField] private float engineMinPitch = 0.85f;
@@ -26,10 +27,19 @@ public class PlayerAudio : MonoBehaviour
     [SerializeField] private float cornerFadeSpeed = 5f;
     [SerializeField] private float cornerMaxVolume = 0.22f;
 
+    [Header("Drift boost")]
+    [SerializeField] private float boostVolume = 0.6f;
+
+    [Tooltip("Pitch of the boost one-shot at the first charge tier, and at the top one. " +
+             "A longer slide should sound like it bought more.")]
+    [SerializeField] private float boostMinPitch = 0.95f;
+    [SerializeField] private float boostMaxPitch = 1.2f;
+
     private PlayerController playerController;
     private AudioSource engineSource;
     private AudioSource skidSource;
     private AudioSource cornerSource;
+    private AudioSource boostSource;
 
     private void Awake()
     {
@@ -39,6 +49,30 @@ public class PlayerAudio : MonoBehaviour
         cornerSource = CreateLoopingSource("CornerAudio", cornerClip);
         skidSource.volume = 0f;
         cornerSource.volume = 0f;
+
+        boostSource = CreateLoopingSource("BoostAudio", boostClip);
+        boostSource.loop = false;
+        boostSource.volume = boostVolume;
+    }
+
+    private void OnEnable()
+    {
+        playerController.BoostFired += OnBoostFired;
+    }
+
+    private void OnDisable()
+    {
+        playerController.BoostFired -= OnBoostFired;
+    }
+
+    private void OnBoostFired(int tier)
+    {
+        if (boostClip == null) return;
+
+        // Tier 1 is the floor, and anything above it climbs towards the top pitch, so
+        // the ear can tell a scraped mini-turbo from one that was held all the way.
+        boostSource.pitch = tier <= 1 ? boostMinPitch : boostMaxPitch;
+        boostSource.PlayOneShot(boostClip, boostVolume);
     }
 
     private void Start()

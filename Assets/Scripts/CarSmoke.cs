@@ -46,6 +46,15 @@ public class CarSmoke : MonoBehaviour
              "sideways at a standstill stays clean.")]
     [SerializeField, Range(0f, 1f)] private float minSpeedFactor = 0.1f;
 
+    [Header("Drift boost")]
+    [Tooltip("Particles coughed out the moment a mini-turbo fires, per charge tier - " +
+             "the puff that tells the driver the slide actually paid.")]
+    [SerializeField, Range(0, 60)] private int boostBurstPerTier = 18;
+
+    [Tooltip("Seconds the exhaust runs flat out after a boost, ignoring the slide duck, " +
+             "so the plume reads as a kick rather than a gap in the tyre smoke.")]
+    [SerializeField] private float boostPlumeTime = 0.35f;
+
     /// <summary>How fast the ducking follows the slide, in units of slide per second.</summary>
     private const float SlideFadeSpeed = 5f;
 
@@ -54,10 +63,21 @@ public class CarSmoke : MonoBehaviour
     private float tyreRate;
     private float slide01;
     private bool throttleWasPressed;
+    private float boostPlumeTimer;
 
     private void Awake()
     {
         playerController = GetComponent<PlayerController>();
+    }
+
+    private void OnEnable()
+    {
+        playerController.BoostFired += OnBoostFired;
+    }
+
+    private void OnDisable()
+    {
+        playerController.BoostFired -= OnBoostFired;
     }
 
     private void Update()
@@ -65,8 +85,17 @@ public class CarSmoke : MonoBehaviour
         // Tyres first: they work out how hard the car is sliding, and the exhaust needs
         // that this frame to know how far to duck out of their way.
         float dt = Time.deltaTime;
+        if (boostPlumeTimer > 0f) boostPlumeTimer -= dt;
         UpdateTyreSmoke(dt);
         UpdateExhaust(dt);
+    }
+
+    private void OnBoostFired(int tier)
+    {
+        boostPlumeTimer = boostPlumeTime;
+
+        if (exhaust == null || boostBurstPerTier <= 0) return;
+        exhaust.Emit(boostBurstPerTier * Mathf.Max(1, tier));
     }
 
     private void UpdateExhaust(float dt)
@@ -78,8 +107,10 @@ public class CarSmoke : MonoBehaviour
         float target = throttle ? exhaustMaxRate : exhaustIdleRate;
 
         // Mid-slide the tyres own the back of the car. Both plumes at once just smeared
-        // into each other and neither read as anything, so the exhaust gives way.
-        target *= 1f - slide01 * exhaustDuckWhileSliding;
+        // into each other and neither read as anything, so the exhaust gives way - except
+        // just after a boost, which is the one moment the plume is the thing to look at.
+        if (boostPlumeTimer > 0f) target = exhaustMaxRate;
+        else target *= 1f - slide01 * exhaustDuckWhileSliding;
 
         exhaustRate = Mathf.MoveTowards(exhaustRate, target, exhaustFadeSpeed * dt);
 

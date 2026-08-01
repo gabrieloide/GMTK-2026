@@ -3,14 +3,14 @@ using UnityEngine;
 public class DeliveryArrowController : MonoBehaviour
 {
     /// <summary>Which local axis of the art is its tip. Imported models rarely agree on this.</summary>
-    public enum NoseAxis { Up, Down, Forward, Back, Right, Left }
+    public enum NoseAxis { Forward, Back, Up, Down, Right, Left }
 
     [SerializeField] private Transform arrowModel;
 
     [Header("Model orientation")]
-    [Tooltip("Where the tip points when the model sits at rotation 0,0,0. Blender exports usually " +
-             "come in nose-up; a model authored for Unity would be Forward.")]
-    [SerializeField] private NoseAxis modelNose = NoseAxis.Up;
+    [Tooltip("Where the tip points when the model sits at rotation 0,0,0. Forward is the +Z the " +
+             "art is authored to; switch this instead of rotating parents if a re-export lands nose-up.")]
+    [SerializeField] private NoseAxis modelNose = NoseAxis.Forward;
 
     [Tooltip("Degrees to spin the arrow around its own pointing axis, for when the art ends up " +
              "edge-on to the camera instead of face-up.")]

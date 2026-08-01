@@ -17,6 +17,18 @@ public class PlayerController : MonoBehaviour
              "car without releasing accelerate. Off: the throttle has to be released.")]
     [SerializeField] private bool brakeWhileAccelerating = true;
 
+    [Header("Reverse")]
+    [Tooltip("Keep steering into the back of a stopped car and it backs up. Fraction of maxSpeed " +
+             "the car reaches in reverse.")]
+    [SerializeField, Range(0f, 1f)] private float reverseSpeedFactor = 0.35f;
+
+    [Tooltip("How opposed to the car's nose WASD has to be to engage reverse. Looser than the " +
+             "brake so that braking to a stop rolls straight into backing up.")]
+    [SerializeField, Range(-1f, 0f)] private float reverseInputAlignment = -0.5f;
+
+    [Tooltip("Reverse only engages below this speed, so it can never fight a car still rolling forward.")]
+    [SerializeField] private float reverseEntrySpeed = 0.5f;
+
     [Header("Steering")]
     [SerializeField] private float turnSpeed = 140f;
 
@@ -36,6 +48,9 @@ public class PlayerController : MonoBehaviour
     public float currentSpeed;
     private Vector3 moveDirection;
     private float knockbackTimer;
+    private bool reversing;
+
+    public bool IsReversing => reversing;
 
     public float MaxSpeed => maxSpeed;
     public float SpeedFactor01 => maxSpeed > 0f ? Mathf.Clamp01(currentSpeed / maxSpeed) : 0f;
@@ -58,6 +73,7 @@ public class PlayerController : MonoBehaviour
         currentSpeed = 0f;
         moveDirection = direction;
         knockbackTimer = duration;
+        reversing = false;
         rb.linearVelocity = new Vector3(direction.x * speed, rb.linearVelocity.y, direction.z * speed);
     }
 
@@ -87,6 +103,8 @@ public class PlayerController : MonoBehaviour
         bool isBraking = canBrake && hasDirection && currentSpeed > 0.01f &&
                          opposition <= brakeInputAlignment;
 
+        if (UpdateReverse(hasDirection, desiredDirection, dt)) return;
+
         UpdateSpeed(isBraking, dt);
         // Steering is suppressed while braking: otherwise pressing back would swing
         // the car around towards the key instead of reading as a brake.
@@ -98,6 +116,47 @@ public class PlayerController : MonoBehaviour
         Vector3 velocity = moveDirection * currentSpeed;
         velocity.y = rb.linearVelocity.y;
         rb.linearVelocity = velocity;
+    }
+
+    /// <summary>
+    /// Backing up is the tail of the brake: hold the key that stopped the car and it keeps
+    /// going the other way. Returns true when reverse owns this frame's velocity.
+    /// </summary>
+    private bool UpdateReverse(bool hasDirection, Vector3 desiredDirection, float dt)
+    {
+        bool wantsReverse = hasDirection &&
+                            !InputReader.Instance.AcceleratePressed &&
+                            Vector3.Dot(desiredDirection.normalized, transform.forward) <= reverseInputAlignment;
+
+        if (!reversing)
+        {
+            if (!wantsReverse || currentSpeed > reverseEntrySpeed) return false;
+            reversing = true;
+            currentSpeed = 0f;
+        }
+
+        float target = wantsReverse ? maxSpeed * reverseSpeedFactor : 0f;
+        float rate = wantsReverse ? acceleration : brakeDeceleration;
+        currentSpeed = Mathf.MoveTowards(currentSpeed, target, rate * dt);
+
+        // Straight back, no steering: with WASD picking a world direction rather than a wheel
+        // angle, turning while reversing would just spin the car on the spot.
+        moveDirection = -transform.forward;
+        DriftFactor01 = 0f;
+        UpdateTurnRate(dt);
+
+        Vector3 velocity = moveDirection * currentSpeed;
+        velocity.y = rb.linearVelocity.y;
+        rb.linearVelocity = velocity;
+
+        // Rolled to a stop with the key already released - hand the car back to normal driving.
+        if (!wantsReverse && currentSpeed <= 0.01f)
+        {
+            reversing = false;
+            moveDirection = transform.forward;
+        }
+
+        return true;
     }
 
     private void ApplyKnockbackDrag(float dt)

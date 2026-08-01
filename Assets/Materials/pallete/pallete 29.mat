@@ -21,28 +21,36 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: pallete 29
-  m_Shader: {fileID: 4800000, guid: 933532a4fcc9baf4fa0491de14d08ed7, type: 3}
+  m_Shader: {fileID: 4800000, guid: 6c046203321edf34fb092959a05e5b4a, type: 3}
   m_Parent: {fileID: 2100000, guid: 716a5753631d600478c9d3d458938a3e, type: 2}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _MK_ENVIRONMENT_REFLECTIONS_AMBIENT
+  - _MK_LIGHT_CEL
+  - _MK_OUTLINE_HULL_CLIP
+  - _MK_RECEIVE_SHADOWS
+  - _MK_SPECULAR_ISOTROPIC
+  m_InvalidKeywords:
+  - _MK_ARTISTIC_ANIMATION_STUTTER
+  - _MK_WRAPPED_DIFFUSE
   - _SPECULAR_SETUP
-  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap:
+    IGNOREPROJECTOR: False
     RenderType: Opaque
-  disabledShaderPasses:
-  - MOTIONVECTORS
+  disabledShaderPasses: []
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs: []
     m_Ints: []
-    m_Floats: []
+    m_Floats:
+    - _OutlineSize: 1000
     m_Colors:
     - _BaseColor: {r: 0.854902, g: 0.69411767, b: 0.38823533, a: 1}
-    - _Color: {r: 0.854902, g: 0.69411767, b: 0.3882353, a: 1}
+    - _Color: {r: 0.98039216, g: 0.4313725, b: 0.47450978, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

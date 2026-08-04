@@ -1,0 +1,30 @@
+GIMP Palette
+Name: GMTK2026
+Columns: 8
+# Colores usados en escena, prefabs y FBX, fusionando los perceptualmente iguales
+ 24  46  70	Azul noche - Car 1
+ 60  60  60	Gris oscuro - Car 3
+120 114 125	Gris violaceo - asfalto
+142 142 142	Gris - carril / Car 9
+190 190 190	Gris claro - Car 2
+255 255 255	Blanco - skybox, humo, Car 7
+ 77  53  51	Marron oscuro
+148  73  58	Terracota - edificios / Car 8
+162 109  63	Marron claro
+172  40  71	Rojo vino - edificios
+236  39  63	Rojo vivo
+222  93  58	Naranja teja - edificios
+206 146  72	Ocre - edificios
+243 168  51	Ambar - edificios
+253 214  63	Amarillo - Car 4
+ 78 147 128	Verde azulado - Car 6
+ 90 181  82	Verde hierba - suelo / Car 5
+ 38 230  76	Verde neon - OrderPickupMarker (gameplay)
+211 238 211	Verde palido - edificios
+  1  91 192	Azul fuerte - Car
+ 51 136 222	Azul medio
+ 54 197 244	Celeste - edificios
+154  77 118	Morado - edificios
+200 120 175	Lila - edificios
+255 162 172	Rosa - edificios
+222 206 237	Lavanda - edificios

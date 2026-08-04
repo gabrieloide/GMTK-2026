@@ -13,9 +13,12 @@ public class PlayerController : MonoBehaviour
              "instead of steering. -1 = only dead backwards, 0 = anything past sideways.")]
     [SerializeField, Range(-1f, 0f)] private float brakeInputAlignment = -0.8f;
 
-    [Tooltip("On: braking beats the throttle, so pressing the opposite key stops the " +
-             "car without releasing accelerate. Off: the throttle has to be released.")]
-    [SerializeField] private bool brakeWhileAccelerating = true;
+    [Tooltip("On: braking beats the throttle, so pressing the opposite key stops the car " +
+             "without releasing accelerate - but then every hard change of direction reads " +
+             "as a brake, because WASD picks a heading rather than a wheel angle. " +
+             "Off: with the throttle held WASD only steers, and stopping means letting go " +
+             "of accelerate first.")]
+    [SerializeField] private bool brakeWhileAccelerating = false;
 
     [Header("Reverse")]
     [Tooltip("Keep steering into the back of a stopped car and it backs up. Fraction of maxSpeed " +
@@ -91,14 +94,14 @@ public class PlayerController : MonoBehaviour
         bool hasDirection = desiredDirection.sqrMagnitude > 0.01f;
         float dt = Time.fixedDeltaTime;
 
-        // Braking is inferred from the stick, so the cone has to be narrow enough that
-        // a hard turn is never mistaken for it. Mid-drift the nose and the velocity
-        // point somewhere different - opposing either one counts, otherwise the brake
-        // would stop answering exactly when the car is sliding.
+        // Braking is inferred from the stick, so it is measured against where the car is
+        // actually travelling: a brake opposes motion, not aim. Testing the nose as well
+        // meant that mid-drift - where the nose and the velocity point somewhere quite
+        // different - steering further round the corner read as a brake, because the stick
+        // was opposing a nose the car had already stopped following.
         bool canBrake = brakeWhileAccelerating || !InputReader.Instance.AcceleratePressed;
         float opposition = hasDirection
-            ? Mathf.Min(Vector3.Dot(desiredDirection.normalized, moveDirection),
-                        Vector3.Dot(desiredDirection.normalized, transform.forward))
+            ? Vector3.Dot(desiredDirection.normalized, moveDirection)
             : 0f;
         bool isBraking = canBrake && hasDirection && currentSpeed > 0.01f &&
                          opposition <= brakeInputAlignment;

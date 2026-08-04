@@ -1,0 +1,80 @@
+﻿E:\Unity\Projects\GMTK 2026\Assets\Materials\DeliveryArrow.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\New Material 2.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\New Material 3.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\OrderDropoffMarker.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 1.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 10.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 11.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 12.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 13.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 14.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 15.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 16.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 17.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 18.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 19.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 2.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 20.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 22.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 23.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 24.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 25.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 26.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 27.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 28.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 29.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 3.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 31.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 32.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 33.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 34.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 35.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 37.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 38.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 39.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 4.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 40.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 42.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 8.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete 9.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\metal\pallete.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 1.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 12.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 14.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 15.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 16.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 17.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 2.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 22.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 26.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 3.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 32.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 34.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 36.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 37.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 4.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 40.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 41.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 43.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 44.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 45.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 46.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 47.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 48.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 49.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 50.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 51.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 52.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 53.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 54.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 55.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 56.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 57.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 58.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 59.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 6.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 60.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 61.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete 8.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\pallete\pallete.mat
+E:\Unity\Projects\GMTK 2026\Assets\Materials\Way.mat

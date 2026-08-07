@@ -39,13 +39,6 @@ public class PlayerController : MonoBehaviour
              "so the car pulls away towards WASD instead of driving off in its old heading.")]
     [SerializeField, Range(0f, 1f)] private float throttleTurnAssist = 0.35f;
 
-    [Header("Drift")]
-    [Tooltip("How fast the car's actual travel direction catches up to where it's pointed, " +
-             "in degrees/second. Every turn drifts now - there's no separate handbrake grip " +
-             "anymore - so this single value is what decides how loose the car feels.")]
-    [SerializeField] private float grip = 90f;
-    [SerializeField] private float driftFriction = 6f;
-
     [Header("Knockback")]
     [SerializeField] private float knockbackDrag = 20f;
 
@@ -114,8 +107,7 @@ public class PlayerController : MonoBehaviour
         // Steering is suppressed while braking: otherwise pressing back would swing
         // the car around towards the key instead of reading as a brake.
         if (hasDirection && !isBraking) UpdateRotation(desiredDirection, dt);
-        UpdateMoveDirection(dt);
-        ApplyDriftFriction(dt);
+        UpdateMoveDirection();
         UpdateTurnRate(dt);
 
         Vector3 velocity = moveDirection * currentSpeed;
@@ -172,24 +164,12 @@ public class PlayerController : MonoBehaviour
         rb.linearVelocity = new Vector3(flat.x, velocity.y, flat.z);
     }
 
-    private void UpdateMoveDirection(float dt)
+    // No drift: velocity always points exactly where the nose does, so cornering feel
+    // comes entirely from UpdateRotation's turnSpeed rather than a separate slide/grip model.
+    private void UpdateMoveDirection()
     {
-        if (currentSpeed <= 0.01f)
-        {
-            moveDirection = transform.forward;
-            return;
-        }
-
-        moveDirection = Vector3.RotateTowards(moveDirection, transform.forward, grip * Mathf.Deg2Rad * dt, 0f);
-    }
-
-    private void ApplyDriftFriction(float dt)
-    {
-        float slide = Mathf.Clamp01(Vector3.Angle(moveDirection, transform.forward) / 90f);
-        DriftFactor01 = slide;
-        if (slide <= 0f) return;
-
-        currentSpeed = Mathf.MoveTowards(currentSpeed, 0f, driftFriction * slide * dt);
+        moveDirection = transform.forward;
+        DriftFactor01 = 0f;
     }
 
     private void UpdateTurnRate(float dt)

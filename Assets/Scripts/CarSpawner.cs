@@ -5,7 +5,7 @@ public class CarSpawner : MonoBehaviour
 {
     [SerializeField] private GameObject carPrefab;
     [SerializeField] private Material[] carMaterials;
-    [SerializeField] private Transform[] spawnPoints;
+    [SerializeField] private RoadNetwork roadNetwork;
     [SerializeField] private float minSpawnInterval = 4f;
     [SerializeField] private float maxSpawnInterval = 9f;
     [SerializeField] private float carSpeed = 8f;
@@ -22,7 +22,7 @@ public class CarSpawner : MonoBehaviour
 
     private void Update()
     {
-        if (spawnPoints == null || spawnPoints.Length == 0 || carPrefab == null) return;
+        if (roadNetwork == null || carPrefab == null) return;
 
         activeCars.RemoveAll(car => car == null);
         if (activeCars.Count >= maxConcurrentCars) return;
@@ -38,17 +38,30 @@ public class CarSpawner : MonoBehaviour
 
     private void SpawnCar()
     {
-        var spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
-        var car = Instantiate(carPrefab, spawnPoint.position, spawnPoint.rotation);
+        var spawnNode = roadNetwork.GetRandomSpawnNode();
+        if (spawnNode == null) return;
+
+        var firstTarget = roadNetwork.GetRandomNeighbor(spawnNode, null);
+        if (firstTarget == null) return;
+
+        var rotation = FacingRotation(spawnNode, firstTarget);
+        var car = Instantiate(carPrefab, spawnNode.transform.position, rotation);
         activeCars.Add(car);
 
         var obstacle = car.GetComponent<CarObstacle>();
-        if (obstacle != null) obstacle.Init(carSpeed);
+        if (obstacle != null) obstacle.Init(roadNetwork, spawnNode, firstTarget, carSpeed);
 
         if (carMaterials != null && carMaterials.Length > 0)
         {
             var carRenderer = car.GetComponentInChildren<Renderer>();
             if (carRenderer != null) carRenderer.material = carMaterials[Random.Range(0, carMaterials.Length)];
         }
+    }
+
+    private static Quaternion FacingRotation(RoadNode from, RoadNode to)
+    {
+        var dir = to.transform.position - from.transform.position;
+        dir.y = 0f;
+        return dir.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(dir.normalized, Vector3.up) : from.transform.rotation;
     }
 }

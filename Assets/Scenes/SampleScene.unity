@@ -3643,6 +3643,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 180745482}
+  - component: {fileID: 180745483}
   m_Layer: 0
   m_Name: CarSpawn (1)
   m_TagString: Untagged
@@ -3663,8 +3664,22 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 462908241}
+  m_Father: {fileID: 1312604520}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &180745483
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 180745481}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71e88b723e74b8f4fa8ca5bf9f11eb08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoadNode
+  isSpawnPoint: 1
+  connections: []
 --- !u!1001 &182060617
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4360,6 +4375,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 200339532}
+  - component: {fileID: 200339533}
   m_Layer: 0
   m_Name: CarSpawn (0)
   m_TagString: Untagged
@@ -4380,8 +4396,24 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 462908241}
+  m_Father: {fileID: 1312604520}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &200339533
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 200339531}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71e88b723e74b8f4fa8ca5bf9f11eb08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoadNode
+  isSpawnPoint: 1
+  connections:
+  - {fileID: 1205137616}
+  - {fileID: 1959453540}
 --- !u!1 &204117062
 GameObject:
   m_ObjectHideFlags: 0
@@ -5374,6 +5406,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 246538411}
+  - component: {fileID: 246538412}
   m_Layer: 0
   m_Name: CarSpawn (4)
   m_TagString: Untagged
@@ -5394,8 +5427,24 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 462908241}
+  m_Father: {fileID: 1312604520}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &246538412
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 246538410}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71e88b723e74b8f4fa8ca5bf9f11eb08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoadNode
+  isSpawnPoint: 1
+  connections:
+  - {fileID: 767804399}
+  - {fileID: 1960259950}
 --- !u!1001 &249362118
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10487,15 +10536,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 200339532}
-  - {fileID: 180745482}
-  - {fileID: 1205137615}
-  - {fileID: 767804398}
-  - {fileID: 246538411}
-  - {fileID: 1960259949}
-  - {fileID: 1411898177}
-  - {fileID: 1959453539}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &465693581
@@ -21930,6 +21971,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 767804398}
+  - component: {fileID: 767804399}
   m_Layer: 0
   m_Name: CarSpawn (3)
   m_TagString: Untagged
@@ -21950,8 +21992,24 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 462908241}
+  m_Father: {fileID: 1312604520}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &767804399
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 767804397}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71e88b723e74b8f4fa8ca5bf9f11eb08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoadNode
+  isSpawnPoint: 1
+  connections:
+  - {fileID: 1205137616}
+  - {fileID: 246538412}
 --- !u!1 &768906442
 GameObject:
   m_ObjectHideFlags: 0
@@ -25730,15 +25788,7 @@ MonoBehaviour:
   - {fileID: 2100000, guid: dd67145bb3b6bc24d91749af9de69b59, type: 2}
   - {fileID: 2100000, guid: a20b622bac62cc341b326c11ca32d028, type: 2}
   - {fileID: 2100000, guid: d21c6be380415634cbb62773636b0507, type: 2}
-  spawnPoints:
-  - {fileID: 200339532}
-  - {fileID: 180745482}
-  - {fileID: 1205137615}
-  - {fileID: 767804398}
-  - {fileID: 246538411}
-  - {fileID: 1960259949}
-  - {fileID: 1411898177}
-  - {fileID: 1959453539}
+  roadNetwork: {fileID: 1312604521}
   minSpawnInterval: 4
   maxSpawnInterval: 9
   carSpeed: 8
@@ -32277,6 +32327,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1205137615}
+  - component: {fileID: 1205137616}
   m_Layer: 0
   m_Name: CarSpawn (2)
   m_TagString: Untagged
@@ -32297,8 +32348,24 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 462908241}
+  m_Father: {fileID: 1312604520}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1205137616
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1205137614}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71e88b723e74b8f4fa8ca5bf9f11eb08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoadNode
+  isSpawnPoint: 1
+  connections:
+  - {fileID: 200339533}
+  - {fileID: 767804399}
 --- !u!1 &1205585146
 GameObject:
   m_ObjectHideFlags: 0
@@ -34491,6 +34558,62 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f99b99262ac55d34287cc8d18ef7a46e, type: 3}
+--- !u!1 &1312604519
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1312604520}
+  - component: {fileID: 1312604521}
+  m_Layer: 0
+  m_Name: RoadNetwork
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1312604520
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1312604519}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 200339532}
+  - {fileID: 180745482}
+  - {fileID: 1205137615}
+  - {fileID: 767804398}
+  - {fileID: 246538411}
+  - {fileID: 1960259949}
+  - {fileID: 1411898177}
+  - {fileID: 1959453539}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1312604521
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1312604519}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77424a94371cb6b47a91cc621bf25728, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoadNetwork
+  laneOffset: 1.2
+  nodeGizmoRadius: 0.6
+  normalNodeColor: {r: 0, g: 1, b: 1, a: 1}
+  spawnNodeColor: {r: 1, g: 0.55, b: 0, a: 1}
 --- !u!1 &1320151779
 GameObject:
   m_ObjectHideFlags: 0
@@ -36157,6 +36280,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1411898177}
+  - component: {fileID: 1411898178}
   m_Layer: 0
   m_Name: CarSpawn (6)
   m_TagString: Untagged
@@ -36177,8 +36301,24 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 462908241}
+  m_Father: {fileID: 1312604520}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1411898178
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1411898176}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71e88b723e74b8f4fa8ca5bf9f11eb08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoadNode
+  isSpawnPoint: 1
+  connections:
+  - {fileID: 1960259950}
+  - {fileID: 1959453540}
 --- !u!4 &1412314147 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: f06d9924c9c500b479e66bb33fbdc63c, type: 3}
@@ -37875,8 +38015,6 @@ MonoBehaviour:
   reverseEntrySpeed: 0.5
   turnSpeed: 220
   throttleTurnAssist: 0.35
-  grip: 90
-  driftFriction: 4.5
   knockbackDrag: 20
   currentSpeed: 14.600019
 --- !u!114 &1481023110
@@ -37947,16 +38085,12 @@ MonoBehaviour:
   exhaust: {fileID: 2116822142}
   tyreSmokeLeft: {fileID: 745129113}
   tyreSmokeRight: {fileID: 2064223995}
-  exhaustIdleRate: 7
-  exhaustMaxRate: 34
-  exhaustFadeSpeed: 40
-  throttleBlip: 5
-  exhaustDuckWhileSliding: 1
-  driftThreshold: 0.35
-  driftFull: 0.7
-  tyreMaxRate: 90
-  tyreFadeSpeed: 160
+  turnThreshold: 0.3
+  turnFull: 0.75
   minSpeedFactor: 0.1
+  exhaustMaxRate: 34
+  tyreMaxRate: 90
+  fadeSpeed: 120
 --- !u!114 &1481023113
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -49041,6 +49175,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1959453539}
+  - component: {fileID: 1959453540}
   m_Layer: 0
   m_Name: CarSpawn (7)
   m_TagString: Untagged
@@ -49061,8 +49196,24 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 462908241}
+  m_Father: {fileID: 1312604520}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1959453540
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1959453538}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71e88b723e74b8f4fa8ca5bf9f11eb08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoadNode
+  isSpawnPoint: 1
+  connections:
+  - {fileID: 1411898178}
+  - {fileID: 200339533}
 --- !u!1 &1959646309
 GameObject:
   m_ObjectHideFlags: 0
@@ -49111,6 +49262,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1960259949}
+  - component: {fileID: 1960259950}
   m_Layer: 0
   m_Name: CarSpawn (5)
   m_TagString: Untagged
@@ -49131,8 +49283,24 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 462908241}
+  m_Father: {fileID: 1312604520}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1960259950
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1960259948}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71e88b723e74b8f4fa8ca5bf9f11eb08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoadNode
+  isSpawnPoint: 1
+  connections:
+  - {fileID: 246538412}
+  - {fileID: 1411898178}
 --- !u!4 &1962722286 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: de12d0b9596727e43985ad57eb994f3d, type: 3}
@@ -62503,3 +62671,4 @@ SceneRoots:
   - {fileID: 797859231}
   - {fileID: 1320205481}
   - {fileID: 228799214}
+  - {fileID: 1312604520}

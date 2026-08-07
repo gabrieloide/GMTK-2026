@@ -8,6 +8,7 @@ public class TimerManager : MonoBehaviour
     private float currentTime = 0f;
     private int lastWarningTick = -1;
     public float CurrentTime => currentTime;
+    public int LowTimeWarningThreshold => lowTimeWarningThreshold;
 
     private void Start()
     {

@@ -40,8 +40,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float throttleTurnAssist = 0.35f;
 
     [Header("Drift")]
-    [SerializeField] private float grip = 720f;
-    [SerializeField] private float handbrakeGrip = 40f;
+    [Tooltip("How fast the car's actual travel direction catches up to where it's pointed, " +
+             "in degrees/second. Every turn drifts now - there's no separate handbrake grip " +
+             "anymore - so this single value is what decides how loose the car feels.")]
+    [SerializeField] private float grip = 90f;
     [SerializeField] private float driftFriction = 6f;
 
     [Header("Knockback")]
@@ -178,8 +180,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        float currentGrip = InputReader.Instance.HandbrakeHeld ? handbrakeGrip : grip;
-        moveDirection = Vector3.RotateTowards(moveDirection, transform.forward, currentGrip * Mathf.Deg2Rad * dt, 0f);
+        moveDirection = Vector3.RotateTowards(moveDirection, transform.forward, grip * Mathf.Deg2Rad * dt, 0f);
     }
 
     private void ApplyDriftFriction(float dt)

@@ -115,8 +115,8 @@ public class RoadNetwork : MonoBehaviour
             foreach (var other in node.connections)
             {
                 if (other == null) continue;
-                var key = node.GetInstanceID() < other.GetInstanceID() ? (node, other) : (other, node);
-                if (!drawnEdges.Add(key)) continue;
+                if (drawnEdges.Contains((node, other)) || drawnEdges.Contains((other, node))) continue;
+                drawnEdges.Add((node, other));
 
                 DrawLaneArrow(node, other);
                 DrawLaneArrow(other, node);

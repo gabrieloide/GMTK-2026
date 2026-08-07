@@ -8,6 +8,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 using Code.Scripts.Audio;
 
 /// <summary>
@@ -37,6 +38,10 @@ public static class SceneBootstrapper
     private const string ArrowTexturePath = "Assets/Textures/ArrowRenderTexture.renderTexture";
     private const string ArrowCompassMaterialPath = "Assets/Materials/ArrowCompassUI.mat";
     private const string ArrowCompassShaderName = "GMTK/UI Render Texture Key";
+    private const string LiberationSansSDFPath = "Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset";
+    // Fallback only - under Assets/Resources so runtime code (ScorePopup) can Resources.Load
+    // it too, not just editor code going through AssetDatabase.
+    private const string DefaultTMPFontPath = "Assets/Resources/Fonts/DefaultTMPFont.asset";
     private const string CarMeshPath = "Assets/3D/CAR-BASE.fbx";
     private const string AudioDatabasePath = "Assets/Audio/AudioDatabase.asset";
     private const string AudioResourcesFolder = "Assets/Resources/Audio";
@@ -869,7 +874,7 @@ public static class SceneBootstrapper
         return created;
     }
 
-    private static Text CreateText(Transform parent, string name, string content, int fontSize, TextAnchor alignment,
+    private static TextMeshProUGUI CreateText(Transform parent, string name, string content, int fontSize, TextAnchor alignment,
         Vector2 anchor, Vector2 anchoredPosition, Vector2 size)
     {
         var created = CreateUIObject(name, parent);
@@ -878,22 +883,68 @@ public static class SceneBootstrapper
         rect.anchoredPosition = anchoredPosition;
         rect.sizeDelta = size;
 
-        var text = created.AddComponent<Text>();
+        var text = created.AddComponent<TextMeshProUGUI>();
         text.text = content;
         text.fontSize = fontSize;
-        text.alignment = alignment;
+        text.alignment = ToTMPAlignment(alignment);
         text.color = Color.white;
-        text.font = LoadBuiltinFont();
-        text.horizontalOverflow = HorizontalWrapMode.Overflow;
-        text.verticalOverflow = VerticalWrapMode.Overflow;
+        text.font = GetOrCreateDefaultTMPFont();
+        text.enableWordWrapping = false;
+        text.overflowMode = TextOverflowModes.Overflow;
         return text;
     }
 
-    private static Font LoadBuiltinFont()
+    private static TextAlignmentOptions ToTMPAlignment(TextAnchor anchor)
     {
-        var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        if (font == null) font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-        return font;
+        switch (anchor)
+        {
+            case TextAnchor.UpperLeft: return TextAlignmentOptions.TopLeft;
+            case TextAnchor.UpperCenter: return TextAlignmentOptions.Top;
+            case TextAnchor.UpperRight: return TextAlignmentOptions.TopRight;
+            case TextAnchor.MiddleLeft: return TextAlignmentOptions.Left;
+            case TextAnchor.MiddleCenter: return TextAlignmentOptions.Center;
+            case TextAnchor.MiddleRight: return TextAlignmentOptions.Right;
+            case TextAnchor.LowerLeft: return TextAlignmentOptions.BottomLeft;
+            case TextAnchor.LowerCenter: return TextAlignmentOptions.Bottom;
+            case TextAnchor.LowerRight: return TextAlignmentOptions.BottomRight;
+            default: return TextAlignmentOptions.Center;
+        }
+    }
+
+    [MenuItem("Tools/GMTK/0 Ensure TMP Font Asset")]
+    public static void EnsureTMPFontAsset()
+    {
+        GetOrCreateDefaultTMPFont();
+    }
+
+    // TMP Essential Resources gives every project "LiberationSans SDF" at this fixed path -
+    // use it directly rather than baking a throwaway one. The bake-from-builtin-font
+    // fallback only kicks in if essentials were somehow never imported (CreateFontAsset can
+    // itself return null off a builtin Font, so this is best-effort, not guaranteed).
+    private static TMP_FontAsset GetOrCreateDefaultTMPFont()
+    {
+        var essentials = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(LiberationSansSDFPath);
+        if (essentials != null) return essentials;
+
+        var existing = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(DefaultTMPFontPath);
+        if (existing != null) return existing;
+
+        var sourceFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        if (sourceFont == null) sourceFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
+
+        var fontAsset = TMP_FontAsset.CreateFontAsset(sourceFont);
+        if (fontAsset == null)
+        {
+            Debug.LogWarning("[Bootstrap] Could not create a fallback TMP font asset. Import " +
+                              "TMP Essential Resources manually via Window > TextMeshPro.");
+            return null;
+        }
+
+        EnsureFolder("Assets/Resources/Fonts");
+        AssetDatabase.CreateAsset(fontAsset, DefaultTMPFontPath);
+        AssetDatabase.SaveAssets();
+        Debug.Log($"[Bootstrap] Created fallback TMP font asset at {DefaultTMPFontPath}");
+        return fontAsset;
     }
 
     private static void Stretch(RectTransform rect)

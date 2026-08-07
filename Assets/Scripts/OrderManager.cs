@@ -49,7 +49,7 @@ public class OrderManager : MonoBehaviour
     private int deliveriesCompleted = 0;
     public int DeliveriesCompleted => deliveriesCompleted;
 
-    public static Action OnOrderFinished;
+    public static Action<Vector3> OnOrderFinished;
     public static Action OnOrderAdded;
     public static Action<float> OnTimeBonusAwarded;
 
@@ -192,7 +192,10 @@ public class OrderManager : MonoBehaviour
         if (GameManager.Instance != null && GameManager.Instance.isGameOver) return;
 
         Debug.Log("Order Finished");
-        OnOrderFinished?.Invoke();
+        // Captured before the dequeue below, while Peek() still points at the delivery
+        // that just completed - this is where the score popup should read from.
+        Vector3 deliveryPosition = GetPickupPoint(activesOrderDestination.Peek().transform);
+        OnOrderFinished?.Invoke(deliveryPosition);
         AudioManager.Instance.PlaySFX("order_delivered");
 
         deliveriesCompleted++;

@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using Code.Scripts.Audio;
@@ -7,7 +7,7 @@ using Code.Scripts.Audio;
 public class GameOverUI : MonoBehaviour
 {
     [SerializeField] private GameObject gameOverPanel;
-    [SerializeField] private Text finalScoreText;
+    [SerializeField] private TextMeshProUGUI finalScoreText;
 
     // The player is usually still on the keys when the clock runs out, so hold off
     // briefly or the score flashes past before it can be read.

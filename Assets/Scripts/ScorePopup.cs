@@ -30,11 +30,13 @@ public class ScorePopup : MonoBehaviour
     [SerializeField] private float duration = 0.9f;
     [SerializeField] private float punchDuration = 0.15f;
     [SerializeField] private float punchScale = 1.35f;
+    [SerializeField] private float spawnTiltAngle = 14f;
 
     private TextMeshProUGUI label;
     private Transform cameraTransform;
     private Vector3 basePosition;
     private float timer;
+    private float spinDirection;
 
     public static void Spawn(Vector3 worldPosition, string text, Color color)
     {
@@ -73,6 +75,7 @@ public class ScorePopup : MonoBehaviour
         label = GetComponentInChildren<TextMeshProUGUI>();
         cameraTransform = Camera.main != null ? Camera.main.transform : null;
         basePosition = transform.position;
+        spinDirection = Random.value < 0.5f ? -1f : 1f;
     }
 
     private void Update()
@@ -84,12 +87,17 @@ public class ScorePopup : MonoBehaviour
         float eased = 1f - (1f - t) * (1f - t);
         transform.position = basePosition + Vector3.up * (riseDistance * eased);
 
-        float punch = t < punchDuration ? Mathf.Lerp(punchScale, 1f, t / punchDuration) : 1f;
+        float punchProgress = t < punchDuration ? t / punchDuration : 1f;
+        float punch = Mathf.Lerp(punchScale, 1f, punchProgress);
         transform.localScale = Vector3.one * (WorldUnitsPerCanvasPixel * baseScale * punch);
+
+        // Pops in tilted and untwists as the punch settles, so each popup reads as a
+        // little flick rather than every "+100" rising in the exact same straight line.
+        float tilt = spinDirection * spawnTiltAngle * (1f - punchProgress);
 
         // UI shaders render both faces, so matching the camera's own rotation is enough
         // to keep the text facing it correctly (not mirrored) at any viewing angle.
-        if (cameraTransform != null) transform.rotation = cameraTransform.rotation;
+        if (cameraTransform != null) transform.rotation = cameraTransform.rotation * Quaternion.Euler(0f, 0f, tilt);
 
         const float fadeStart = 0.5f;
         if (t > fadeStart)

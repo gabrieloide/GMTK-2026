@@ -38174,15 +38174,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CarLean
   playerController: {fileID: 1481023109}
   carVisual: {fileID: 892638523}
-  maxLeanAngle: 12
-  driftLeanBonus: 8
-  leanSmoothTime: 0.15
-  fullLeanYawRate: 60
+  maxLeanAngle: 24
+  driftLeanBonus: 10
+  leanSmoothTime: 0.08
+  fullLeanYawRate: 45
   leanDirection: -1
-  maxPitchAngle: 6
-  fullPitchAccelRate: 15
-  pitchSmoothTime: 0.12
+  maxPitchAngle: 14
+  fullPitchAccelRate: 9
+  pitchSmoothTime: 0.08
   pitchDirection: 1
+  maxStretch: 0.16
+  maxSquash: 0.22
+  scaleSmoothTime: 0.1
 --- !u!114 &1481023116
 MonoBehaviour:
   m_ObjectHideFlags: 0

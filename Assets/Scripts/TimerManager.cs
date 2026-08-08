@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using Code.Scripts.Audio;
 
@@ -9,6 +10,10 @@ public class TimerManager : MonoBehaviour
     private int lastWarningTick = -1;
     public float CurrentTime => currentTime;
     public int LowTimeWarningThreshold => lowTimeWarningThreshold;
+
+    // Fired once per second tick while time is low, same moment the warning SFX plays -
+    // lets the HUD punch/shake the clock in sync with the beep instead of just recoloring it.
+    public event Action<int> OnLowTimeTick;
 
     private void Start()
     {
@@ -41,6 +46,7 @@ public class TimerManager : MonoBehaviour
             {
                 lastWarningTick = tick;
                 AudioManager.Instance.PlaySFX("low_time_warning");
+                OnLowTimeTick?.Invoke(tick);
             }
         }
     }

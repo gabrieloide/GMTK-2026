@@ -38,18 +38,19 @@ public class CarSpawner : MonoBehaviour
 
     private void SpawnCar()
     {
-        var spawnNode = roadNetwork.GetRandomSpawnNode();
-        if (spawnNode == null) return;
+        var spawnPoint = roadNetwork.GetRandomEntradaSpawnPoint();
+        if (spawnPoint == null || spawnPoint.connectedNode == null) return;
 
-        var firstTarget = roadNetwork.GetRandomNeighbor(spawnNode, null);
+        var entryNode = spawnPoint.connectedNode;
+        var firstTarget = roadNetwork.GetRandomNeighbor(entryNode, null);
         if (firstTarget == null) return;
 
-        var rotation = FacingRotation(spawnNode, firstTarget);
-        var car = Instantiate(carPrefab, spawnNode.transform.position, rotation);
+        var rotation = FacingRotation(spawnPoint.transform.position, entryNode.transform.position);
+        var car = Instantiate(carPrefab, spawnPoint.transform.position, rotation);
         activeCars.Add(car);
 
         var obstacle = car.GetComponent<CarObstacle>();
-        if (obstacle != null) obstacle.Init(roadNetwork, spawnNode, firstTarget, carSpeed);
+        if (obstacle != null) obstacle.Init(roadNetwork, entryNode, firstTarget, carSpeed);
 
         if (carMaterials != null && carMaterials.Length > 0)
         {
@@ -58,10 +59,10 @@ public class CarSpawner : MonoBehaviour
         }
     }
 
-    private static Quaternion FacingRotation(RoadNode from, RoadNode to)
+    private static Quaternion FacingRotation(Vector3 from, Vector3 to)
     {
-        var dir = to.transform.position - from.transform.position;
+        var dir = to - from;
         dir.y = 0f;
-        return dir.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(dir.normalized, Vector3.up) : from.transform.rotation;
+        return dir.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(dir.normalized, Vector3.up) : Quaternion.identity;
     }
 }

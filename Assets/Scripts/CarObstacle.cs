@@ -4,9 +4,10 @@ using UnityEngine;
 // Traffic car AI: wanders the RoadNetwork graph node by node, steering smoothly toward
 // each next waypoint (offset into its own lane so opposing traffic doesn't share a
 // centerline - see RoadNetwork.GetLanePoint) instead of snapping heading instantly.
-// After a random number of hops it stops wandering, paths to the nearest spawn node via
-// RoadNetwork.ShortestPathToNearestSpawn, and despawns on arrival - which may well be a
-// different spawn than the one it entered from.
+// After a random number of hops it stops wandering, paths to the RoadNode nearest a
+// Salida SpawnPoint via RoadNetwork.ShortestPathToNearestExit, drives the final stretch
+// off the node graph to that spawn marker's own position, and despawns there - which may
+// well be a different spawn than the one it entered from.
 [RequireComponent(typeof(Rigidbody))]
 public class CarObstacle : MonoBehaviour
 {
@@ -23,9 +24,9 @@ public class CarObstacle : MonoBehaviour
     private RoadNetwork network;
     private RoadNode fromNode;
     private RoadNode toNode;
-    private int hopsRemaining;
     private List<RoadNode> returnPath;
     private int returnPathIndex;
+    private SpawnPoint exitPoint;
     private float lifeTimer;
 
     // firstTarget is picked by the caller (CarSpawner) rather than chosen internally so
@@ -36,7 +37,17 @@ public class CarObstacle : MonoBehaviour
         speed = moveSpeed;
         fromNode = startNode;
         toNode = firstTarget;
-        hopsRemaining = Random.Range(minWanderHops, maxWanderHops + 1);
+        
+        // Pick a random exit immediately upon spawning, ensuring it's at least 50 units away (so they travel across town).
+        exitPoint = network.GetRandomSalidaSpawnPoint(startNode.transform.position, 50f);
+        if (exitPoint != null && exitPoint.connectedNode != null)
+        {
+            returnPath = network.ShortestPathToTarget(firstTarget, exitPoint.connectedNode);
+            if (returnPath != null)
+            {
+                returnPathIndex = 0; // firstTarget is at index 0 of this path
+            }
+        }
     }
 
     private void Start()
@@ -60,9 +71,13 @@ public class CarObstacle : MonoBehaviour
             return;
         }
 
-        if (toNode == null) return;
+        if (toNode == null && exitPoint == null)
+        {
+            Destroy(gameObject);
+            return;
+        }
 
-        var targetPoint = network.GetLanePoint(fromNode, toNode);
+        var targetPoint = toNode != null ? network.GetLanePoint(fromNode, toNode) : exitPoint.transform.position;
         var toTarget = targetPoint - rb.position;
         toTarget.y = 0f;
 
@@ -79,11 +94,24 @@ public class CarObstacle : MonoBehaviour
 
         if (Vector3.Distance(rb.position, targetPoint) <= nodeArriveRadius)
         {
-            ArriveAtNode();
+            if (toNode != null) ArriveAtNode();
+            else Destroy(gameObject); // arrived at the exit spawn marker itself
         }
     }
 
     private void ArriveAtNode()
+    {
+        AdvanceTarget();
+
+        // Skip microscopic bridge segments caused by prefab snapping to prevent 
+        // erratic lane offset calculations that cause 360-degree spins.
+        while (toNode != null && Vector3.Distance(fromNode.transform.position, toNode.transform.position) < 2.0f)
+        {
+            AdvanceTarget();
+        }
+    }
+
+    private void AdvanceTarget()
     {
         var arrivedAt = toNode;
         var cameFrom = fromNode;
@@ -92,32 +120,14 @@ public class CarObstacle : MonoBehaviour
         if (returnPath != null)
         {
             returnPathIndex++;
-            if (returnPathIndex >= returnPath.Count)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            toNode = returnPath[returnPathIndex];
+            toNode = returnPathIndex < returnPath.Count ? returnPath[returnPathIndex] : null;
             return;
         }
 
-        hopsRemaining--;
-        if (hopsRemaining <= 0)
-        {
-            returnPath = network.ShortestPathToNearestSpawn(arrivedAt);
-            if (returnPath != null && returnPath.Count > 1)
-            {
-                returnPathIndex = 1;
-                toNode = returnPath[returnPathIndex];
-                return;
-            }
-
-            // Already at (or no path to) a spawn node - nothing left to drive to.
-            Destroy(gameObject);
-            return;
-        }
-
-        toNode = network.GetRandomNeighbor(arrivedAt, cameFrom);
-        if (toNode == null) Destroy(gameObject);
+        // Fallback: If no exit was found at spawn, wander aimlessly but avoid U-turns if possible.
+        var options = arrivedAt.connections.FindAll(n => n != cameFrom);
+        if (options.Count == 0) options = arrivedAt.connections;
+        
+        toNode = options.Count > 0 ? options[Random.Range(0, options.Count)] : null;
     }
 }

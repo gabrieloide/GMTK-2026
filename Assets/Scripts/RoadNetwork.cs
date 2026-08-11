@@ -3,26 +3,31 @@ using System.Linq;
 using UnityEngine;
 
 // Owns the waypoint graph traffic cars drive on: a set of RoadNode children plus their
-// connections. Draws the whole graph as gizmos (spawn nodes vs regular nodes, two lanes
-// per street so both directions are visible) and provides the queries CarObstacle needs
-// to wander the graph and, later, find its way back out to a spawn node.
+// connections, and a set of SpawnPoint children marking where cars enter (Entrada) or
+// exit (Salida) the network. Draws the whole graph as gizmos - two lanes per street so
+// both directions are visible, plus a colored arrow per spawn point showing which way
+// traffic flows through it - and provides the queries CarSpawner/CarObstacle need to
+// spawn cars, wander the graph, and find their way back out to an exit.
 // Building/editing the graph itself happens in RoadNetworkEditor (Scene view tool), not
 // here - this component only stores and reads it.
 public class RoadNetwork : MonoBehaviour
 {
-    [SerializeField] private float laneOffset = 1.2f;
+    [SerializeField] private float laneOffset = 3f;
     [SerializeField] private float nodeGizmoRadius = 0.6f;
+    [SerializeField] private float spawnGizmoSize = 0.8f;
     [SerializeField] private Color normalNodeColor = Color.cyan;
-    [SerializeField] private Color spawnNodeColor = new Color(1f, 0.55f, 0f);
+    [SerializeField] private Color entradaColor = new Color(0.2f, 0.9f, 0.3f);
+    [SerializeField] private Color salidaColor = new Color(0.9f, 0.2f, 0.2f);
 
     public float LaneOffset => laneOffset;
 
-    public List<RoadNode> Nodes => GetComponentsInChildren<RoadNode>(true).ToList();
+    public List<RoadNode> Nodes => FindObjectsByType<RoadNode>(FindObjectsInactive.Include, FindObjectsSortMode.None).ToList();
+    public List<SpawnPoint> SpawnPoints => FindObjectsByType<SpawnPoint>(FindObjectsInactive.Include, FindObjectsSortMode.None).ToList();
 
-    public RoadNode GetRandomSpawnNode()
+    public SpawnPoint GetRandomEntradaSpawnPoint()
     {
-        var spawns = Nodes.Where(n => n.isSpawnPoint).ToList();
-        return spawns.Count == 0 ? null : spawns[Random.Range(0, spawns.Count)];
+        var options = SpawnPoints.Where(s => s.role == SpawnPoint.Role.Entrada && s.connectedNode != null).ToList();
+        return options.Count == 0 ? null : options[Random.Range(0, options.Count)];
     }
 
     // Picks a random neighbor of current, preferring not to double back to cameFrom
@@ -38,11 +43,30 @@ public class RoadNetwork : MonoBehaviour
     }
 
     // Dijkstra over the graph (edge weight = euclidean distance) from `from` to the
-    // nearest node flagged isSpawnPoint. Returns the path including `from` as the first
-    // element and the chosen spawn node as the last, or null if none is reachable.
-    public List<RoadNode> ShortestPathToNearestSpawn(RoadNode from)
+    // nearest RoadNode that has a Salida SpawnPoint attached. Returns the path including
+    // `from` as the first element and that node as the last, plus the SpawnPoint found -
+    // or (null, null) if no exit is reachable. The caller still has to drive the final
+    // stretch from that last node to exitPoint.transform.position itself.
+    public SpawnPoint GetRandomSalidaSpawnPoint(Vector3 fromPos = default, float minDistance = 0f)
     {
-        if (from == null) return null;
+        var validSpawns = SpawnPoints.Where(s => s.role == SpawnPoint.Role.Salida && s.connectedNode != null).ToList();
+        if (validSpawns.Count == 0) return null;
+
+        var farSpawns = validSpawns.Where(s => Vector3.Distance(fromPos, s.transform.position) >= minDistance).ToList();
+        
+        // Fallback: If all exits are closer than minDistance, try to just avoid the exact same entrance (distance > 2.0f)
+        if (farSpawns.Count == 0)
+        {
+            farSpawns = validSpawns.Where(s => Vector3.Distance(fromPos, s.transform.position) > 2.0f).ToList();
+            if (farSpawns.Count == 0) farSpawns = validSpawns; // Extreme fallback
+        }
+
+        return farSpawns[Random.Range(0, farSpawns.Count)];
+    }
+
+    public List<RoadNode> ShortestPathToTarget(RoadNode from, RoadNode target)
+    {
+        if (from == null || target == null) return null;
 
         var dist = new Dictionary<RoadNode, float> { [from] = 0f };
         var prev = new Dictionary<RoadNode, RoadNode>();
@@ -62,14 +86,13 @@ public class RoadNetwork : MonoBehaviour
             }
 
             if (current == null) break;
-            unvisited.Remove(current);
-
-            if (current.isSpawnPoint && current != from)
+            if (current == target)
             {
                 var path = new List<RoadNode> { current };
                 while (prev.TryGetValue(path[0], out var p)) path.Insert(0, p);
                 return path;
             }
+            unvisited.Remove(current);
 
             foreach (var neighbor in current.connections)
             {
@@ -82,7 +105,6 @@ public class RoadNetwork : MonoBehaviour
                 }
             }
         }
-
         return null;
     }
 
@@ -109,7 +131,7 @@ public class RoadNetwork : MonoBehaviour
         {
             if (node == null) continue;
 
-            Gizmos.color = node.isSpawnPoint ? spawnNodeColor : normalNodeColor;
+            Gizmos.color = normalNodeColor;
             Gizmos.DrawSphere(node.transform.position, nodeGizmoRadius);
 
             foreach (var other in node.connections)
@@ -121,6 +143,11 @@ public class RoadNetwork : MonoBehaviour
                 DrawLaneArrow(node, other);
                 DrawLaneArrow(other, node);
             }
+        }
+
+        foreach (var spawn in SpawnPoints)
+        {
+            if (spawn != null) DrawSpawnPoint(spawn);
         }
     }
 
@@ -135,7 +162,7 @@ public class RoadNetwork : MonoBehaviour
         var right = Vector3.Cross(Vector3.up, dir).normalized;
         var laneStart = start + right * laneOffset;
 
-        Gizmos.color = to.isSpawnPoint || from.isSpawnPoint ? spawnNodeColor : normalNodeColor;
+        Gizmos.color = normalNodeColor;
         Gizmos.DrawLine(laneStart, end);
 
         var mid = Vector3.Lerp(laneStart, end, 0.5f);
@@ -144,5 +171,33 @@ public class RoadNetwork : MonoBehaviour
         var arrowSize = 0.5f;
         Gizmos.DrawLine(mid, mid + (back + arrowRight) * arrowSize);
         Gizmos.DrawLine(mid, mid + (back - arrowRight) * arrowSize);
+    }
+
+    // Draws the spawn marker as a colored sphere (green = Entrada, red = Salida) plus a
+    // line to its connected node with an arrowhead in the direction traffic actually
+    // flows: into the network for Entrada, out of it for Salida.
+    private void DrawSpawnPoint(SpawnPoint spawn)
+    {
+        var isEntrada = spawn.role == SpawnPoint.Role.Entrada;
+        Gizmos.color = isEntrada ? entradaColor : salidaColor;
+        Gizmos.DrawSphere(spawn.transform.position, spawnGizmoSize * 0.5f);
+
+        if (spawn.connectedNode == null) return;
+
+        var spawnPos = spawn.transform.position;
+        var nodePos = spawn.connectedNode.transform.position;
+        Gizmos.DrawLine(spawnPos, nodePos);
+
+        var from = isEntrada ? spawnPos : nodePos;
+        var to = isEntrada ? nodePos : spawnPos;
+        var dir = (to - from);
+        if (dir.sqrMagnitude < 0.0001f) return;
+        dir.Normalize();
+        var right = Vector3.Cross(Vector3.up, dir).normalized;
+
+        var tip = Vector3.Lerp(from, to, 0.5f);
+        var back = -dir;
+        Gizmos.DrawLine(tip, tip + (back + right) * spawnGizmoSize);
+        Gizmos.DrawLine(tip, tip + (back - right) * spawnGizmoSize);
     }
 }

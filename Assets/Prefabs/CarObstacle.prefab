@@ -81,8 +81,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 15.429747, y: 7.0877028, z: 6.4837275}
-  m_Center: {x: 0.27347755, y: 3.507927, z: 0.02873087}
+  m_Size: {x: 5.424802, y: 7.0877028, z: 12.641728}
+  m_Center: {x: 0, y: 3.507927, z: 0.02873087}
 --- !u!114 &5870550243208840144
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -95,8 +95,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ed17fd4e8f140258f515a4186683b4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CarObstacle
-  speed: 8
-  lifetime: 15
+  speed: 500
+  turnSpeed: 120
+  nodeArriveRadius: 1.5
+  minWanderHops: 4
+  maxWanderHops: 10
+  maxLifetime: 120
 --- !u!1001 &6382769820372317846
 PrefabInstance:
   m_ObjectHideFlags: 0

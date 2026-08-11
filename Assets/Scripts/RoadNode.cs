@@ -1,13 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// A single waypoint in the RoadNetwork graph. Lives as a child GameObject under a
-// RoadNetwork so it can be dragged around with Unity's normal move gizmo; connections
-// are edited via RoadNetworkEditor (click a node, then click another) rather than by
-// hand in the Inspector.
+// A single waypoint in the RoadNetwork graph - purely for internal trazado/intersections
+// that cars wander between. Never a spawn location itself; see SpawnPoint for where cars
+// enter/exit the network. Lives as a child GameObject under a RoadNetwork so it can be
+// dragged around with Unity's normal move gizmo; connections are edited via
+// RoadNetworkEditor (click a node, then click another) rather than by hand in the
+// Inspector.
 public class RoadNode : MonoBehaviour
 {
-    public bool isSpawnPoint;
     public List<RoadNode> connections = new List<RoadNode>();
 
     public void Connect(RoadNode other)
@@ -36,6 +37,13 @@ public class RoadNode : MonoBehaviour
         foreach (var other in connections.ToArray())
         {
             if (other != null) other.connections.Remove(this);
+        }
+
+        var network = GetComponentInParent<RoadNetwork>();
+        if (network == null) return;
+        foreach (var spawn in network.SpawnPoints)
+        {
+            if (spawn != null && spawn.connectedNode == this) spawn.connectedNode = null;
         }
     }
 }

@@ -21,7 +21,7 @@ public class OrderManager : MonoBehaviour
     // Tall on Y so a marker sitting near street level still overlaps the car's
     // collider (which is offset well above its transform), wide enough on XZ that
     // driving past at speed reliably registers.
-    [SerializeField] private Vector3 detectionHalfExtents = new Vector3(3f, 10f, 3f);
+    [SerializeField] public Vector3 detectionHalfExtents = new Vector3(3f, 10f, 3f);
 
     [Header("Gizmos")]
     [SerializeField] private bool drawTargetGizmo = true;
@@ -138,15 +138,7 @@ public class OrderManager : MonoBehaviour
         return tier;
     }
 
-    private static Mesh capsuleGizmoMesh;
-    private static void DrawWireCapsule(Vector3 position, Quaternion rotation, Vector3 scale)
-    {
-        if (capsuleGizmoMesh == null)
-        {
-            capsuleGizmoMesh = Resources.GetBuiltinResource<Mesh>("Capsule.fbx");
-        }
-        Gizmos.DrawWireMesh(capsuleGizmoMesh, position, rotation, scale);
-    }
+
 
     public void AddOrder()
     {
@@ -216,32 +208,6 @@ public class OrderManager : MonoBehaviour
     void OnDrawGizmos()
     {
         DrawCurrentTargetGizmo();
-
-        if(orderTransform == null) return;
-        foreach (var order in orderTransform)
-        {
-            if(order == null) continue;
-
-            Gizmos.color = Color.green;
-            DrawWireCapsule(GetPickupPoint(order.transform), order.transform.rotation, Vector3.one * 8f);
-
-            if (order.orderDestination == null) continue;
-
-            if (order.isActive)
-            {
-                Gizmos.color = Color.green;
-                Gizmos.DrawWireSphere(GetPickupPoint(order.transform), 0.5f);
-            }
-
-            if (order.orderDestination.isActive)
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawWireSphere(GetPickupPoint(order.orderDestination.transform), 0.5f);
-
-                Gizmos.color = Color.turquoise;
-                Gizmos.DrawLine(GetPickupPoint(order.transform), GetPickupPoint(order.orderDestination.transform));
-            }
-        }
     }
 
     // Beacon over whatever the player has to reach right now, so the objective is

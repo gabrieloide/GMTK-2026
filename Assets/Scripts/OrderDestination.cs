@@ -33,12 +33,28 @@ public class OrderDestination : MonoBehaviour
         if (!drawGizmo) return;
 
         bool isTarget = isActive && isPickedUp;
-        Vector3 point = OrderManager.GetPickupPoint(transform);
+        OrderManager manager = OrderManager.Instance;
+#if UNITY_EDITOR
+        if (manager == null) manager = FindObjectOfType<OrderManager>();
+#endif
+        
+        Vector3 point = transform.position;
+        Vector3 size = new Vector3(6f, 20f, 6f);
+        if (manager != null)
+        {
+            point = point + transform.TransformDirection(Vector3.forward + manager.offset);
+            size = manager.detectionHalfExtents * 2f;
+        }
+
         Vector3 top = point + Vector3.up * gizmoBeamHeight;
 
-        Gizmos.color = isTarget ? new Color(1f, 0.4f, 0.1f) : new Color(1f, 0.4f, 0.1f, 0.25f);
+        Gizmos.color = isTarget ? new Color(1f, 0.4f, 0.1f) : new Color(1f, 0.4f, 0.1f, 0.7f);
         Gizmos.DrawLine(point, top);
-        Gizmos.DrawWireSphere(point, isTarget ? 2f : 1f);
+        
+        // Draw the exact detection box
+        Gizmos.matrix = Matrix4x4.TRS(point, transform.rotation, Vector3.one);
+        Gizmos.DrawWireCube(Vector3.zero, size);
+        Gizmos.matrix = Matrix4x4.identity;
 
         // Little pennant on top of the pole - reads as a drop-off flag from far away.
         Gizmos.DrawLine(top, top + new Vector3(1.5f, -1f, 0f));

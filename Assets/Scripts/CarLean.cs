@@ -36,6 +36,10 @@ public class CarLean : MonoBehaviour
     [SerializeField] private float maxSquash = 0.22f;
     [SerializeField] private float scaleSmoothTime = 0.1f;
 
+    [Header("Idle Shake")]
+    [SerializeField] private float idleShakeMagnitude = 0.3f;
+    [SerializeField] private float idleShakeSpeed = 40f;
+
     private Quaternion restLocalRotation = Quaternion.identity;
     private Vector3 restLocalScale = Vector3.one;
     private float previousYaw;
@@ -90,7 +94,14 @@ public class CarLean : MonoBehaviour
         float targetStretch = accel01 * (accel01 >= 0f ? maxStretch : maxSquash);
         currentStretch = Mathf.SmoothDamp(currentStretch, targetStretch, ref stretchVelocity, scaleSmoothTime);
 
-        carVisual.localRotation = restLocalRotation * Quaternion.Euler(currentPitch, 0f, currentLean);
+        // Idle shake when stopped
+        float shake = 0f;
+        if (playerController.SpeedFactor01 < 0.05f)
+        {
+            shake = Mathf.Sin(Time.time * idleShakeSpeed) * idleShakeMagnitude;
+        }
+
+        carVisual.localRotation = restLocalRotation * Quaternion.Euler(currentPitch + shake, 0f, currentLean + (shake * 0.5f));
         carVisual.localScale = new Vector3(
             restLocalScale.x * (1f - currentStretch * 0.5f),
             restLocalScale.y * (1f - currentStretch * 0.5f),

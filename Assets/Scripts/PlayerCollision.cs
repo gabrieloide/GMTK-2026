@@ -39,6 +39,7 @@ public class PlayerCollision : MonoBehaviour
     private Vector3 carVisualRestLocalPosition;
     private Vector3 carVisualRestLocalScale = Vector3.one;
     private Coroutine hopRoutine;
+    private Coroutine crashDeformRoutine;
 
     void Start()
     {
@@ -82,6 +83,8 @@ public class PlayerCollision : MonoBehaviour
 
         float force = Mathf.Clamp(collision.relativeVelocity.magnitude * hitImpulseScale, hitImpulseMin, hitImpulseMax);
         GenerateImpulse(force);
+
+        PlayCrashDeform(0.4f, 0.15f);
     }
 
     // The curb is a step up, not an obstacle: no knockback, just a jolt to sell the height
@@ -148,5 +151,37 @@ public class PlayerCollision : MonoBehaviour
 
         carVisual.localScale = carVisualRestLocalScale;
         hopRoutine = null;
+    }
+
+    private void PlayCrashDeform(float amount, float duration)
+    {
+        if (carVisual == null) return;
+        if (crashDeformRoutine != null) StopCoroutine(crashDeformRoutine);
+        // Also stop hop routine to prevent fighting over localScale
+        if (hopRoutine != null) StopCoroutine(hopRoutine);
+        
+        crashDeformRoutine = StartCoroutine(CrashDeformCoroutine(amount, duration));
+    }
+
+    private System.Collections.IEnumerator CrashDeformCoroutine(float amount, float duration)
+    {
+        float timer = 0f;
+        while (timer < duration)
+        {
+            timer += Time.deltaTime;
+            float t = Mathf.Clamp01(timer / duration);
+            // Sin curve: 0 -> 1 -> 0
+            float squash = Mathf.Sin(t * Mathf.PI) * amount;
+            
+            carVisual.localScale = new Vector3(
+                carVisualRestLocalScale.x * (1f + squash * 0.5f), // bulge sideways
+                carVisualRestLocalScale.y * (1f + squash * 0.5f), // bulge upwards
+                carVisualRestLocalScale.z * (1f - squash)         // squash forwards (Z)
+            );
+            yield return null;
+        }
+
+        carVisual.localScale = carVisualRestLocalScale;
+        crashDeformRoutine = null;
     }
 }

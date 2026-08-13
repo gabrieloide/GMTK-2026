@@ -142,15 +142,15 @@ public class OrderManager : MonoBehaviour
 
     public void AddOrder()
     {
-        bool becomesCurrent = activesOrderHolder.Count == 0;
-
         var availableOrderHolders = orderTransform.Where(o => !activesOrderHolder.Contains(o)).ToList();
-        if (availableOrderHolders.Count == 0) availableOrderHolders = orderTransform;
-        var newOrderHolder = availableOrderHolders[UnityEngine.Random.Range(0, availableOrderHolders.Count)];
-        activesOrderHolder.Enqueue(newOrderHolder);
+        if (availableOrderHolders.Count == 0) return; // Wait until one frees up
 
         var availableOrderDestinations = orderDestination.Where(o => !activesOrderDestination.Contains(o)).ToList();
-        if (availableOrderDestinations.Count == 0) availableOrderDestinations = orderDestination;
+        if (availableOrderDestinations.Count == 0) return; // Wait until one frees up
+
+        bool becomesCurrent = activesOrderHolder.Count == 0;
+        var newOrderHolder = availableOrderHolders[UnityEngine.Random.Range(0, availableOrderHolders.Count)];
+        activesOrderHolder.Enqueue(newOrderHolder);
 
         var tier = GetCurrentTier();
         var bandedDestinations = availableOrderDestinations.Where(d =>
@@ -204,7 +204,60 @@ public class OrderManager : MonoBehaviour
 
         AddOrder();
         AudioManager.Instance.PlaySFX("order_new");
+        
+        // --- GAME FEEL: Hit Stop & Confetti ---
+        StartCoroutine(HitStopRoutine(0.08f));
+        SpawnConfetti(deliveryPosition);
     }
+
+    private System.Collections.IEnumerator HitStopRoutine(float duration)
+    {
+        Time.timeScale = 0.05f; // Almost paused, gives a better feel than 0
+        yield return new WaitForSecondsRealtime(duration);
+        Time.timeScale = 1f;
+    }
+
+    private void SpawnConfetti(Vector3 position)
+    {
+        GameObject confettiObj = new GameObject("ConfettiBurst");
+        confettiObj.transform.position = position + Vector3.up * 1.5f;
+        
+        ParticleSystem ps = confettiObj.AddComponent<ParticleSystem>();
+        var main = ps.main;
+        main.duration = 1f;
+        main.loop = false;
+        main.startLifetime = 1.5f;
+        main.startSpeed = new ParticleSystem.MinMaxCurve(5f, 15f);
+        main.startSize = new ParticleSystem.MinMaxCurve(0.2f, 0.4f);
+        main.startColor = new ParticleSystem.MinMaxGradient(Color.green, Color.yellow);
+        main.gravityModifier = 2f;
+        main.simulationSpace = ParticleSystemSimulationSpace.World;
+        
+        var emission = ps.emission;
+        emission.rateOverTime = 0f;
+        emission.SetBursts(new ParticleSystem.Burst[] { new ParticleSystem.Burst(0f, 40) });
+        
+        var shape = ps.shape;
+        shape.shapeType = ParticleSystemShapeType.Sphere;
+        shape.radius = 0.5f;
+
+        var renderer = ps.GetComponent<ParticleSystemRenderer>();
+        renderer.renderMode = ParticleSystemRenderMode.Mesh;
+        
+        // Create a simple quad mesh for the confetti
+        Mesh quad = new Mesh();
+        quad.vertices = new Vector3[] { new Vector3(-0.5f,-0.5f,0), new Vector3(0.5f,-0.5f,0), new Vector3(-0.5f,0.5f,0), new Vector3(0.5f,0.5f,0) };
+        quad.uv = new Vector2[] { new Vector2(0,0), new Vector2(1,0), new Vector2(0,1), new Vector2(1,1) };
+        quad.triangles = new int[] { 0, 2, 1, 2, 3, 1 };
+        quad.RecalculateNormals();
+        
+        renderer.mesh = quad;
+        renderer.material = new Material(Shader.Find("Sprites/Default"));
+
+        // Destroy after it finishes
+        Destroy(confettiObj, 2f);
+    }
+
     void OnDrawGizmos()
     {
         DrawCurrentTargetGizmo();

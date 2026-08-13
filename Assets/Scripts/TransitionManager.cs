@@ -15,6 +15,10 @@ public class TransitionManager : MonoBehaviour
     [SerializeField] private float transitionDuration = 1.0f;
     [Tooltip("Should the game start with the transition opening up?")]
     [SerializeField] private bool playIntroOnStart = true;
+    [Tooltip("How long to wait when the screen is fully covered before opening again.")]
+    [SerializeField] private float midTransitionPause = 2.0f;
+    [Tooltip("How long to stay frozen AFTER the transition fully opens.")]
+    [SerializeField] private float postTransitionPause = 0.5f;
     
     // Shader property ID for better performance
     private int transitionPropertyID;
@@ -81,13 +85,13 @@ public class TransitionManager : MonoBehaviour
     /// Executes the transition effect.
     /// </summary>
     /// <param name="onScreenCovered">Logic to execute right in the middle (when screen is fully black/covered). Ideal for swapping panels.</param>
-    public void PlayTransition(Action onScreenCovered)
+    public void PlayTransition(Action onScreenCovered, Action onTransitionFinished = null)
     {
         if (isTransitioning) return;
-        StartCoroutine(TransitionRoutine(onScreenCovered));
+        StartCoroutine(TransitionRoutine(onScreenCovered, onTransitionFinished));
     }
 
-    private IEnumerator TransitionRoutine(Action onScreenCovered)
+    private IEnumerator TransitionRoutine(Action onScreenCovered, Action onTransitionFinished)
     {
         isTransitioning = true;
         
@@ -118,8 +122,11 @@ public class TransitionManager : MonoBehaviour
         // 3. EXECUTE THE LOGIC (Change panels, restart game, etc.)
         onScreenCovered?.Invoke();
 
-        // Optional small pause if you want the screen to remain black for a fraction of a second
-        // yield return new WaitForSeconds(0.1f);
+        // Pause while the screen is black
+        if (midTransitionPause > 0f)
+        {
+            yield return new WaitForSecondsRealtime(midTransitionPause);
+        }
 
         // 4. FADE OUT (1 to 0) - Open the blinds
         time = 0f;
@@ -135,6 +142,13 @@ public class TransitionManager : MonoBehaviour
         
         // 5. Restore UI clicks
         transitionImage.raycastTarget = false;
+
+        if (postTransitionPause > 0f)
+        {
+            yield return new WaitForSecondsRealtime(postTransitionPause);
+        }
+
         isTransitioning = false;
+        onTransitionFinished?.Invoke();
     }
 }

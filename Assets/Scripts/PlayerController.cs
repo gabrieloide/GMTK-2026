@@ -77,6 +77,9 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (GameManager.Instance == null || GameManager.Instance.State != GameState.Playing || !GameManager.Instance.IsGameUnfrozen)
+            return;
+
         if (knockbackTimer > 0f)
         {
             knockbackTimer -= Time.fixedDeltaTime;

@@ -6,6 +6,7 @@ public class HUDController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI timerText;
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private TimerManager timerManager;
+    [SerializeField] private GameObject hudContainer;
 
     [Header("Score Punch")]
     [SerializeField] private float punchScale = 1.3f;
@@ -45,14 +46,39 @@ public class HUDController : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        if (GameManager.Instance != null && GameManager.Instance.State == GameState.MainMenu)
+        {
+            if (hudContainer != null) hudContainer.SetActive(false);
+            else 
+            {
+                if (timerText != null) timerText.gameObject.SetActive(false);
+                if (scoreText != null) scoreText.gameObject.SetActive(false);
+            }
+        }
+    }
+
     private void OnEnable()
     {
         if (timerManager != null) timerManager.OnLowTimeTick += HandleLowTimeTick;
+        GameManager.OnGameStarted += ShowHUD;
     }
 
     private void OnDisable()
     {
         if (timerManager != null) timerManager.OnLowTimeTick -= HandleLowTimeTick;
+        GameManager.OnGameStarted -= ShowHUD;
+    }
+
+    private void ShowHUD()
+    {
+        if (hudContainer != null) hudContainer.SetActive(true);
+        else 
+        {
+            if (timerText != null) timerText.gameObject.SetActive(true);
+            if (scoreText != null) scoreText.gameObject.SetActive(true);
+        }
     }
 
     private void Update()

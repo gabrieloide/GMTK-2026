@@ -28,7 +28,7 @@ public class TimerManager : MonoBehaviour
 
     private void Update()
     {
-        if (GameManager.Instance == null || GameManager.Instance.isGameOver) return;
+        if (GameManager.Instance == null || GameManager.Instance.State != GameState.Playing || GameManager.Instance.isGameOver || !GameManager.Instance.IsGameUnfrozen) return;
 
         startTimer -= Time.deltaTime;
         currentTime = Mathf.FloorToInt(startTimer);

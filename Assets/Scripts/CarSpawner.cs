@@ -14,6 +14,7 @@ public class CarSpawner : MonoBehaviour
     private float timer;
     private float nextSpawnTime;
     private readonly List<GameObject> activeCars = new List<GameObject>();
+    private readonly Queue<GameObject> pool = new Queue<GameObject>();
 
     private void Start()
     {
@@ -46,16 +47,40 @@ public class CarSpawner : MonoBehaviour
         if (firstTarget == null) return;
 
         var rotation = FacingRotation(spawnPoint.transform.position, entryNode.transform.position);
-        var car = Instantiate(carPrefab, spawnPoint.transform.position, rotation);
+        
+        GameObject car;
+        if (pool.Count > 0)
+        {
+            car = pool.Dequeue();
+            car.transform.position = spawnPoint.transform.position;
+            car.transform.rotation = rotation;
+            car.SetActive(true);
+        }
+        else
+        {
+            car = Instantiate(carPrefab, spawnPoint.transform.position, rotation);
+            car.transform.SetParent(this.transform);
+        }
+        
         activeCars.Add(car);
 
         var obstacle = car.GetComponent<CarObstacle>();
-        if (obstacle != null) obstacle.Init(roadNetwork, entryNode, firstTarget, carSpeed);
+        if (obstacle != null) obstacle.Init(roadNetwork, entryNode, firstTarget, carSpeed, OnCarDespawn);
 
         if (carMaterials != null && carMaterials.Length > 0)
         {
             var carRenderer = car.GetComponentInChildren<Renderer>();
             if (carRenderer != null) carRenderer.material = carMaterials[Random.Range(0, carMaterials.Length)];
+        }
+    }
+
+    private void OnCarDespawn(CarObstacle car)
+    {
+        car.gameObject.SetActive(false);
+        activeCars.Remove(car.gameObject);
+        if (!pool.Contains(car.gameObject))
+        {
+            pool.Enqueue(car.gameObject);
         }
     }
 

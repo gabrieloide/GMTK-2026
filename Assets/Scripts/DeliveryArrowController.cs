@@ -30,10 +30,23 @@ public class DeliveryArrowController : MonoBehaviour
     private void Update()
     {
         if (OrderManager.Instance == null || player == null || arrowModel == null) return;
+        
+        bool isPlaying = GameManager.Instance != null && GameManager.Instance.State == GameState.Playing;
+        if (!isPlaying && arrowModel.gameObject.activeSelf) 
+        {
+            arrowModel.gameObject.SetActive(false);
+            return;
+        }
 
         Vector3 toTarget = OrderManager.Instance.GetCurrentTargetPosition() - player.position;
         toTarget.y = 0f;
-        if (toTarget.sqrMagnitude < 0.0001f) return;
+        if (toTarget.sqrMagnitude < 0.0001f || !isPlaying) 
+        {
+            if (arrowModel.gameObject.activeSelf) arrowModel.gameObject.SetActive(false);
+            return;
+        }
+
+        if (!arrowModel.gameObject.activeSelf) arrowModel.gameObject.SetActive(true);
 
         // Aim in world space rather than as a yaw off the player's heading, so the arrow keeps
         // working wherever it is parented - right now it hangs off the car.

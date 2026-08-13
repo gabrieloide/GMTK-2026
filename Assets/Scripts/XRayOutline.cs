@@ -203,11 +203,13 @@ public class XRayOutline : MonoBehaviour
             if (!candidate.name.ToLowerInvariant().StartsWith(BuildingNamePrefix)) continue;
 
             MeshRenderer[] renderers = candidate.GetComponentsInChildren<MeshRenderer>();
-            if (renderers.Length == 0) continue;
-
-            Bounds bounds = renderers[0].bounds;
-            for (int i = 1; i < renderers.Length; i++) bounds.Encapsulate(renderers[i].bounds);
-            buildingBounds.Add(bounds);
+            foreach (var renderer in renderers)
+            {
+                // Optionally shrink the bounds slightly to avoid triggering on glancing angles
+                Bounds b = renderer.bounds;
+                b.Expand(-0.5f);
+                buildingBounds.Add(b);
+            }
         }
     }
 

@@ -46,6 +46,9 @@ public class GameOverUI : MonoBehaviour
     public void Restart()
     {
         AudioManager.Instance.PlaySFX("ui_restart");
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        TransitionManager.Instance.PlayTransition(() => 
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        });
     }
 }

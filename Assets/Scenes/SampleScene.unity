@@ -30969,7 +30969,7 @@ Camera:
     height: 1
   near clip plane: 0.1
   far clip plane: 5000
-  field of view: 60.000004
+  field of view: 68.3
   orthographic: 0
   orthographic size: 10
   m_Depth: 0
@@ -31027,8 +31027,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1032537513}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.04995011, y: 0.7259467, z: -0.05302246, w: 0.6838823}
-  m_LocalPosition: {x: -170, y: 104, z: 211}
+  m_LocalRotation: {x: 0.46174863, y: 0, z: 0, w: 0.8870109}
+  m_LocalPosition: {x: -87.7, y: 71.25, z: -45.155}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -42144,10 +42144,7 @@ MonoBehaviour:
   hitImpulseMin: 0.5
   hitImpulseMax: 1.8
   sidewalkTag: Sidewalk
-  curbImpulseForce: 0.6
   carVisual: {fileID: 892638523}
-  curbHopHeight: 0.9
-  curbHopDuration: 0.22
   pickupImpulseForce: 0.4
   pickupHopHeight: 0.4
   pickupHopDuration: 0.18
@@ -42281,19 +42278,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CarLean
   playerController: {fileID: 1481023109}
+  playerCollision: {fileID: 0}
   carVisual: {fileID: 892638523}
   maxLeanAngle: 24
   driftLeanBonus: 10
   leanSmoothTime: 0.08
   fullLeanYawRate: 45
   leanDirection: -1
-  maxPitchAngle: 14
-  fullPitchAccelRate: 9
-  pitchSmoothTime: 0.08
-  pitchDirection: 1
-  maxStretch: 0.16
-  maxSquash: 0.22
-  scaleSmoothTime: 0.1
+  accelPopAngle: -32
+  accelPopDuration: 0.5
+  accelPopStretch: 0.28
+  maxBrakePitchAngle: 22
+  brakePitchSmoothTime: 0.05
+  brakeRecoverSmoothTime: 0.12
+  brakeSquashAmount: 0.18
+  pitchLiftFactor: 0.035
   idleShakeMagnitude: 0.3
   idleShakeSpeed: 40
 --- !u!114 &1481023116
@@ -46601,7 +46600,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 96d4fb115774fd34fa38f0de976ac27d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.71
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 96d4fb115774fd34fa38f0de976ac27d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -58086,7 +58085,7 @@ Transform:
   m_GameObject: {fileID: 2061446362}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 17.14, z: 0}
+  m_LocalPosition: {x: 0, y: 17.14, z: -4.66}
   m_LocalScale: {x: 6.09, y: 6.09, z: 6.09}
   m_ConstrainProportionsScale: 1
   m_Children:

@@ -43,11 +43,30 @@ public class PlayerAudio : MonoBehaviour
 
     private void Start()
     {
-        if (engineClip != null) engineSource.Play();
+        // Don't auto-play engine in Start if in MainMenu
+        if (engineClip != null && GameManager.Instance != null && GameManager.Instance.State == GameState.Playing)
+        {
+            engineSource.Play();
+        }
     }
 
     private void Update()
     {
+        bool isPlaying = GameManager.Instance != null && GameManager.Instance.State == GameState.Playing;
+
+        if (!isPlaying)
+        {
+            if (engineSource != null && engineSource.isPlaying) engineSource.Stop();
+            if (skidSource != null && skidSource.isPlaying) skidSource.Stop();
+            if (cornerSource != null && cornerSource.isPlaying) cornerSource.Stop();
+            return;
+        }
+
+        if (engineSource != null && !engineSource.isPlaying && engineClip != null)
+        {
+            engineSource.Play();
+        }
+
         float speedFactor = playerController.SpeedFactor01;
         engineSource.pitch = Mathf.Lerp(engineMinPitch, engineMaxPitch, speedFactor);
         engineSource.volume = Mathf.Lerp(engineMinVolume, engineMaxVolume, speedFactor);

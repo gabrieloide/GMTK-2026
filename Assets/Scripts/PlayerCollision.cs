@@ -71,6 +71,7 @@ public class PlayerCollision : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
+        if (GameManager.Instance == null || GameManager.Instance.State != GameState.Playing) return;
         // Ignorar aceras para que no cuenten como choque con pared ni apliquen shake/movimiento
         if (IsSidewalk(collision.gameObject))
         {

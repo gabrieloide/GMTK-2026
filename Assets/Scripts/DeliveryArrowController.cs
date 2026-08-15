@@ -31,16 +31,17 @@ public class DeliveryArrowController : MonoBehaviour
     {
         if (OrderManager.Instance == null || player == null || arrowModel == null) return;
         
-        bool isPlaying = GameManager.Instance != null && GameManager.Instance.State == GameState.Playing;
-        if (!isPlaying && arrowModel.gameObject.activeSelf) 
+        Transform target = OrderManager.Instance.GetCurrentTargetTransform();
+        if (target == null || !isPlaying)
         {
-            arrowModel.gameObject.SetActive(false);
+            if (arrowModel.gameObject.activeSelf) arrowModel.gameObject.SetActive(false);
             return;
         }
 
-        Vector3 toTarget = OrderManager.Instance.GetCurrentTargetPosition() - player.position;
+        Vector3 targetPos = OrderManager.GetPickupPoint(target);
+        Vector3 toTarget = targetPos - player.position;
         toTarget.y = 0f;
-        if (toTarget.sqrMagnitude < 0.0001f || !isPlaying) 
+        if (toTarget.sqrMagnitude < 0.0001f) 
         {
             if (arrowModel.gameObject.activeSelf) arrowModel.gameObject.SetActive(false);
             return;

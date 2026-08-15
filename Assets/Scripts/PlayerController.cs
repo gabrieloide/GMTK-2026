@@ -49,6 +49,8 @@ public class PlayerController : MonoBehaviour
     private bool reversing;
 
     public bool IsReversing => reversing;
+    public bool IsBraking { get; private set; }
+    public bool IsAccelerating => InputReader.Instance != null && InputReader.Instance.AcceleratePressed && !IsBraking && !reversing;
 
     public float MaxSpeed => maxSpeed;
     public float SpeedFactor01 => maxSpeed > 0f ? Mathf.Clamp01(currentSpeed / maxSpeed) : 0f;
@@ -74,6 +76,7 @@ public class PlayerController : MonoBehaviour
         moveDirection = direction;
         knockbackTimer = duration;
         reversing = false;
+        IsBraking = false;
         rb.linearVelocity = new Vector3(direction.x * speed, rb.linearVelocity.y, direction.z * speed);
     }
 
@@ -84,6 +87,7 @@ public class PlayerController : MonoBehaviour
 
         if (knockbackTimer > 0f)
         {
+            IsBraking = false;
             knockbackTimer -= Time.fixedDeltaTime;
             ApplyKnockbackDrag(Time.fixedDeltaTime);
             return;
@@ -106,7 +110,13 @@ public class PlayerController : MonoBehaviour
         bool isBraking = canBrake && hasDirection && currentSpeed > 0.01f &&
                          opposition <= brakeInputAlignment;
 
-        if (UpdateReverse(hasDirection, desiredDirection, dt)) return;
+        IsBraking = isBraking;
+
+        if (UpdateReverse(hasDirection, desiredDirection, dt))
+        {
+            IsBraking = false;
+            return;
+        }
 
         UpdateSpeed(isBraking, dt);
         // Steering is suppressed while braking: otherwise pressing back would swing

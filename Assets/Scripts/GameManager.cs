@@ -57,17 +57,27 @@ public class GameManager : MonoBehaviour
     {
         if (State != GameState.MainMenu) return;
 
-        TransitionManager.Instance.PlayTransition(
-            onScreenCovered: () =>
-            {
-                State = GameState.Playing;
-                OnGameStarted?.Invoke();
-            },
-            onTransitionFinished: () =>
-            {
-                IsGameUnfrozen = true;
-                OnGameUnfrozen?.Invoke();
-            }
-        );
+        if (TransitionManager.Instance != null)
+        {
+            TransitionManager.Instance.PlayTransition(
+                onScreenCovered: () =>
+                {
+                    State = GameState.Playing;
+                    OnGameStarted?.Invoke();
+                },
+                onTransitionFinished: () =>
+                {
+                    IsGameUnfrozen = true;
+                    OnGameUnfrozen?.Invoke();
+                }
+            );
+        }
+        else
+        {
+            State = GameState.Playing;
+            OnGameStarted?.Invoke();
+            IsGameUnfrozen = true;
+            OnGameUnfrozen?.Invoke();
+        }
     }
 }

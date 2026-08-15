@@ -4,7 +4,6 @@ using System.Linq;
 using System;
 using Code.Scripts.Audio;
 
-
 public class OrderManager : MonoBehaviour
 {
     [Serializable]
@@ -39,12 +38,14 @@ public class OrderManager : MonoBehaviour
         new DifficultyTier { deliveriesRequired = 15, minDistance = 300f, maxDistance = 500f, timeBonus = 7f },
     };
 
-    private List<OrderHolder> orderTransform;
-    private List<OrderDestination> orderDestination;
+    private List<OrderHolder> allOrderHolders = new List<OrderHolder>();
+    private List<OrderDestination> allOrderDestinations = new List<OrderDestination>();
 
+    public OrderHolder CurrentHolder { get; private set; }
+    public OrderDestination CurrentDestination { get; private set; }
 
-    private Queue<OrderHolder> activesOrderHolder = new Queue<OrderHolder>();
-    private Queue<OrderDestination> activesOrderDestination = new Queue<OrderDestination>();
+    public bool HasActiveOrder => CurrentHolder != null && CurrentDestination != null;
+    public bool IsCarryingParcel => HasActiveOrder && CurrentDestination.isPickedUp;
 
     private int deliveriesCompleted = 0;
     public int DeliveriesCompleted => deliveriesCompleted;
@@ -55,38 +56,45 @@ public class OrderManager : MonoBehaviour
 
     private Transform playerTransform;
     public static OrderManager Instance { get; private set; }
-    void Awake()
+
+    private void Awake()
     {
         if (Instance != null && Instance != this)
         {
             Destroy(this);
+            return;
         }
-        else
-        {
-            Instance = this;
-        }
-        orderTransform = FindObjectsByType<OrderHolder>().ToList();
-        orderDestination = FindObjectsByType<OrderDestination>().ToList();
+        Instance = this;
+
+        FindAllPoints();
     }
 
-    void Start()
+    private void FindAllPoints()
     {
+        allOrderHolders = FindObjectsByType<OrderHolder>(FindObjectsInactive.Include, FindObjectsSortMode.None).ToList();
+        allOrderDestinations = FindObjectsByType<OrderDestination>(FindObjectsInactive.Include, FindObjectsSortMode.None).ToList();
+    }
 
-        playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
+    private void Start()
+    {
+        var playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj != null) playerTransform = playerObj.transform;
+
         AddOrder();
     }
+
     private void Update()
     {
         if (GameManager.Instance != null && GameManager.Instance.isGameOver) return;
 
-        if (activesOrderHolder.Count == 0)
+        if (playerTransform == null)
         {
-            Debug.LogWarning("No active orders available.");
-            return;
+            var playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null) playerTransform = playerObj.transform;
         }
 
-        var currentOrderHolder = activesOrderHolder.Peek();
-        if (activesOrderHolder.Count == 1 && Vector3.Distance(playerTransform.position, GetPickupPoint(currentOrderHolder.transform)) < 1f)
+        // Self-heal: If playing and somehow no order is active, spawn one immediately!
+        if (GameManager.Instance != null && GameManager.Instance.State == GameState.Playing && !HasActiveOrder)
         {
             AddOrder();
         }
@@ -94,7 +102,7 @@ public class OrderManager : MonoBehaviour
 
     public static Vector3 GetPickupPoint(Transform target)
     {
-        // Instance is null while gizmos draw in edit mode, so fall back to no offset.
+        if (target == null) return Vector3.zero;
         Vector3 offset = Instance != null ? Instance.offset : Vector3.zero;
         return target.position + target.TransformDirection(Vector3.forward + offset);
     }
@@ -112,24 +120,29 @@ public class OrderManager : MonoBehaviour
     public Vector3 GetCurrentTargetPosition()
     {
         var target = GetCurrentTargetTransform();
-        return target == null ? transform.position : GetPickupPoint(target);
+        if (target == null)
+        {
+            return playerTransform != null ? playerTransform.position : transform.position;
+        }
+        return GetPickupPoint(target);
     }
 
     // The marker the player has to reach right now: the destination once the
     // parcel is on board, the holder while it still has to be picked up.
     public Transform GetCurrentTargetTransform()
     {
-        if (activesOrderHolder.Count == 0) return null;
-
-        var destination = activesOrderDestination.Count > 0 ? activesOrderDestination.Peek() : null;
-        if (destination != null && destination.isPickedUp) return destination.transform;
-        return activesOrderHolder.Peek().transform;
+        if (!HasActiveOrder) return null;
+        if (IsCarryingParcel) return CurrentDestination.transform;
+        return CurrentHolder.transform;
     }
-
-    public bool IsCarryingParcel => activesOrderDestination.Count > 0 && activesOrderDestination.Peek().isPickedUp;
 
     private DifficultyTier GetCurrentTier()
     {
+        if (difficultyTiers == null || difficultyTiers.Length == 0)
+        {
+            return new DifficultyTier { deliveriesRequired = 0, minDistance = 40f, maxDistance = 100f, timeBonus = 15f };
+        }
+
         var tier = difficultyTiers[0];
         foreach (var candidate in difficultyTiers)
         {
@@ -138,69 +151,94 @@ public class OrderManager : MonoBehaviour
         return tier;
     }
 
-
-
     public void AddOrder()
     {
-        var availableOrderHolders = orderTransform.Where(o => !activesOrderHolder.Contains(o)).ToList();
-        if (availableOrderHolders.Count == 0) return; // Wait until one frees up
+        if (allOrderHolders == null || allOrderHolders.Count == 0 || allOrderDestinations == null || allOrderDestinations.Count == 0)
+        {
+            FindAllPoints();
+        }
 
-        var availableOrderDestinations = orderDestination.Where(o => !activesOrderDestination.Contains(o)).ToList();
-        if (availableOrderDestinations.Count == 0) return; // Wait until one frees up
+        if (allOrderHolders.Count == 0 || allOrderDestinations.Count == 0)
+        {
+            Debug.LogWarning("[OrderManager] No OrderHolders or OrderDestinations found in scene!");
+            return;
+        }
 
-        bool becomesCurrent = activesOrderHolder.Count == 0;
-        var newOrderHolder = availableOrderHolders[UnityEngine.Random.Range(0, availableOrderHolders.Count)];
-        activesOrderHolder.Enqueue(newOrderHolder);
+        // Clean up any previous state
+        if (CurrentHolder != null)
+        {
+            CurrentHolder.isActive = false;
+            CurrentHolder.isCurrent = false;
+        }
+        if (CurrentDestination != null)
+        {
+            CurrentDestination.isActive = false;
+            CurrentDestination.isPickedUp = false;
+        }
+
+        // Select new Holder (try to avoid picking the exact same one if multiple exist)
+        List<OrderHolder> availableHolders = allOrderHolders.Where(h => h != null).ToList();
+        if (availableHolders.Count > 1 && CurrentHolder != null)
+        {
+            availableHolders = availableHolders.Where(h => h != CurrentHolder).ToList();
+        }
+        OrderHolder newOrderHolder = availableHolders[UnityEngine.Random.Range(0, availableHolders.Count)];
+
+        // Select new Destination matching distance tier
+        List<OrderDestination> availableDestinations = allOrderDestinations.Where(d => d != null).ToList();
+        if (availableDestinations.Count > 1 && CurrentDestination != null)
+        {
+            availableDestinations = availableDestinations.Where(d => d != CurrentDestination).ToList();
+        }
 
         var tier = GetCurrentTier();
-        var bandedDestinations = availableOrderDestinations.Where(d =>
+        var bandedDestinations = availableDestinations.Where(d =>
         {
             float dist = Vector3.Distance(newOrderHolder.transform.position, d.transform.position);
             return dist >= tier.minDistance && dist <= tier.maxDistance;
         }).ToList();
+
         if (bandedDestinations.Count == 0)
         {
             float mid = (tier.minDistance + tier.maxDistance) * 0.5f;
-            bandedDestinations = availableOrderDestinations
+            bandedDestinations = availableDestinations
                 .OrderBy(d => Mathf.Abs(Vector3.Distance(newOrderHolder.transform.position, d.transform.position) - mid))
-                .Take(Mathf.Min(3, availableOrderDestinations.Count)).ToList();
+                .Take(Mathf.Min(3, availableDestinations.Count)).ToList();
         }
-        var newOrderDestination = bandedDestinations[UnityEngine.Random.Range(0, bandedDestinations.Count)];
-        activesOrderDestination.Enqueue(newOrderDestination);
+
+        OrderDestination newOrderDestination = bandedDestinations[UnityEngine.Random.Range(0, bandedDestinations.Count)];
+
+        CurrentHolder = newOrderHolder;
+        CurrentDestination = newOrderDestination;
 
         newOrderHolder.orderDestination = newOrderDestination;
         newOrderDestination.orderHolder = newOrderHolder;
 
         newOrderHolder.isActive = true;
-        newOrderHolder.isCurrent = becomesCurrent;
+        newOrderHolder.isCurrent = true;
         newOrderDestination.isActive = true;
         newOrderDestination.isPickedUp = false;
 
         OnOrderAdded?.Invoke();
     }
+
     public void OnFinishOrder()
     {
         // Without this the score and clock keep ticking up behind the game over screen.
         if (GameManager.Instance != null && GameManager.Instance.isGameOver) return;
 
         Debug.Log("Order Finished");
-        // Captured before the dequeue below, while Peek() still points at the delivery
-        // that just completed - this is where the score popup should read from.
-        Vector3 deliveryPosition = GetPickupPoint(activesOrderDestination.Peek().transform);
+        // Captured while CurrentDestination is still valid
+        Vector3 deliveryPosition = CurrentDestination != null 
+            ? GetPickupPoint(CurrentDestination.transform) 
+            : (playerTransform != null ? playerTransform.position : transform.position);
+
         OnOrderFinished?.Invoke(deliveryPosition);
         AudioManager.Instance.PlaySFX("order_delivered");
 
         deliveriesCompleted++;
         OnTimeBonusAwarded?.Invoke(GetCurrentTier().timeBonus);
         AudioManager.Instance.PlaySFX("time_bonus");
-
-        activesOrderHolder.Dequeue();
-        activesOrderDestination.Dequeue();
-
-        if (activesOrderHolder.Count > 0)
-        {
-            activesOrderHolder.Peek().isCurrent = true;
-        }
 
         AddOrder();
         AudioManager.Instance.PlaySFX("order_new");

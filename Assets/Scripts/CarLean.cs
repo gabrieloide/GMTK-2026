@@ -20,11 +20,11 @@ public class CarLean : MonoBehaviour
 
     [Header("Acceleration Pop (Wheelie)")]
     [Tooltip("Pitch angle (degrees) the nose tilts UP when beginning to accelerate. Negative values lift the front wheels.")]
-    [SerializeField] private float accelPopAngle = -20f;
+    [SerializeField] private float accelPopAngle = -32f;
     [Tooltip("Duration in seconds of the initial wheelie pop before smoothly leveling out.")]
-    [SerializeField] private float accelPopDuration = 0.42f;
+    [SerializeField] private float accelPopDuration = 0.5f;
     [Tooltip("Cartoon stretch along length during the acceleration kick.")]
-    [SerializeField] private float accelPopStretch = 0.18f;
+    [SerializeField] private float accelPopStretch = 0.28f;
 
     [Header("Brake Pitch (Nose Down, Rear Up)")]
     [Tooltip("Pitch angle (degrees) the car tilts forward when braking. Positive values dip the nose and raise the rear wheels.")]
@@ -36,7 +36,7 @@ public class CarLean : MonoBehaviour
 
     [Header("Suspension Lift Compensation")]
     [Tooltip("Slight upward visual shift per degree of pitch so contact wheels stay on the road without clipping into the floor.")]
-    [SerializeField] private float pitchLiftFactor = 0.02f;
+    [SerializeField] private float pitchLiftFactor = 0.035f;
 
     [Header("Idle Shake")]
     [SerializeField] private float idleShakeMagnitude = 0.3f;

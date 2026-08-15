@@ -30,39 +30,36 @@ public class MainMenuUI : MonoBehaviour
 
         bool startTriggered = false;
 
-        // 1. New Input System Keyboard (Space, Enter, NumpadEnter)
+        // 1. Keyboard (Space, Enter, or any key)
         if (Keyboard.current != null)
         {
             if (Keyboard.current.spaceKey.wasPressedThisFrame ||
                 Keyboard.current.enterKey.wasPressedThisFrame ||
-                Keyboard.current.numpadEnterKey.wasPressedThisFrame)
+                Keyboard.current.numpadEnterKey.wasPressedThisFrame ||
+                Keyboard.current.anyKey.wasPressedThisFrame)
             {
                 startTriggered = true;
             }
         }
 
-        // 2. New Input System Gamepad (A/Cross or Start)
-        if (Gamepad.current != null)
+        // 2. Gamepad (A/Cross, Start, or any button)
+        if (!startTriggered && Gamepad.current != null)
         {
             if (Gamepad.current.buttonSouth.wasPressedThisFrame ||
-                Gamepad.current.startButton.wasPressedThisFrame)
+                Gamepad.current.startButton.wasPressedThisFrame ||
+                Gamepad.current.allControls.Count > 0 && Gamepad.current.buttonSouth.wasPressedThisFrame)
             {
                 startTriggered = true;
             }
         }
 
-        // 3. New Input System Mouse / Touch (Click/tap anywhere)
-        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-        {
-            startTriggered = true;
-        }
-        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
+        // 3. Mouse / Touch (Click/tap anywhere)
+        if (!startTriggered && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
         {
             startTriggered = true;
         }
 
-        // 4. Legacy Input Fallback (in case active input handling differs)
-        if (Input.anyKeyDown || Input.GetMouseButtonDown(0))
+        if (!startTriggered && Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
         {
             startTriggered = true;
         }

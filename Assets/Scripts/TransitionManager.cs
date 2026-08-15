@@ -48,6 +48,7 @@ public class TransitionManager : MonoBehaviour
             float initialValue = playIntroOnStart ? 1f : 0f;
             transitionImage.material.SetFloat(transitionPropertyID, initialValue);
             transitionImage.raycastTarget = playIntroOnStart;
+            transitionImage.enabled = playIntroOnStart;
         }
     }
 
@@ -62,7 +63,11 @@ public class TransitionManager : MonoBehaviour
     private IEnumerator IntroRoutine()
     {
         isTransitioning = true;
-        transitionImage.raycastTarget = true;
+        if (transitionImage != null)
+        {
+            transitionImage.enabled = true;
+            transitionImage.raycastTarget = true;
+        }
 
         float halfDuration = transitionDuration / 2f;
         float time = 0f;
@@ -78,6 +83,7 @@ public class TransitionManager : MonoBehaviour
 
         transitionImage.material.SetFloat(transitionPropertyID, 0f);
         transitionImage.raycastTarget = false;
+        transitionImage.enabled = false;
         isTransitioning = false;
     }
 
@@ -102,7 +108,8 @@ public class TransitionManager : MonoBehaviour
             yield break;
         }
 
-        // 1. Block UI clicks while transitioning
+        // 1. Block UI clicks and enable rendering while transitioning
+        transitionImage.enabled = true;
         transitionImage.raycastTarget = true;
 
         float halfDuration = transitionDuration / 2f;
@@ -140,8 +147,9 @@ public class TransitionManager : MonoBehaviour
 
         transitionImage.material.SetFloat(transitionPropertyID, 0f);
         
-        // 5. Restore UI clicks
+        // 5. Restore UI clicks and disable Image to prevent overdraw
         transitionImage.raycastTarget = false;
+        transitionImage.enabled = false;
 
         if (postTransitionPause > 0f)
         {

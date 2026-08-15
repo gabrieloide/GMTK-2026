@@ -44926,6 +44926,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1598148191}
   - component: {fileID: 1598148190}
+  - component: {fileID: 1598148192}
   m_Layer: 0
   m_Name: AudioManager
   m_TagString: Untagged
@@ -44947,6 +44948,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: StarterTools.Runtime::Code.Scripts.Audio.AudioManager
   _database: {fileID: 11400000, guid: 9a7ad6772d1c9490490327fa7a064318, type: 2}
   _initialPoolSize: 10
+--- !u!114 &1598148192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1598148189}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3b4c5d6e7f809123456789012345678, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MusicManager
+  rhythmLoopClip: {fileID: 8300000, guid: 77f8fe3c28f972149bbd59a0bddaed71, type: 3}
+  menuCushionClip: {fileID: 8300000, guid: c53d1ae606b4bfc439ad6aa465b5c749, type: 3}
+  gameplayCushionClip: {fileID: 8300000, guid: c539a9d151d7aea4f93316cf5c7436c8, type: 3}
+  masterMusicVolume: 0.85
+  rhythmVolume: 0.9
+  menuCushionVolume: 0.6
+  gameplayCushionVolume: 0.65
+  crossfadeDuration: 0.8
 --- !u!4 &1598148191
 Transform:
   m_ObjectHideFlags: 0

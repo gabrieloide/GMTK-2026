@@ -16,6 +16,7 @@ public class OrderHolder : MonoBehaviour
     {
         if (markerVisual != null) markerVisual.enabled = isActive && isCurrent;
         if (!isActive || !isCurrent) return;
+        if (GameManager.Instance == null || GameManager.Instance.State != GameState.Playing) return;
 
         Vector3 pickupPoint = OrderManager.GetPickupPoint(transform);
         if (OrderManager.IsPlayerAtPoint(pickupPoint, transform.rotation))

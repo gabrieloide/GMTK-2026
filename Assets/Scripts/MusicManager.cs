@@ -47,27 +47,23 @@ public class MusicManager : MonoBehaviour
 
     private void Start()
     {
+        // Preload audio data to prevent any buffer latency differences
+        if (rhythmLoopClip != null) rhythmLoopClip.LoadAudioData();
+        if (menuCushionClip != null) menuCushionClip.LoadAudioData();
+        if (gameplayCushionClip != null) gameplayCushionClip.LoadAudioData();
+
         bool isMainMenu = GameManager.Instance == null || GameManager.Instance.State == GameState.MainMenu;
 
-        // 1. Rhythm always starts playing immediately and loops forever
-        if (rhythmSource != null && rhythmLoopClip != null)
-        {
-            rhythmSource.volume = rhythmVolume * masterMusicVolume;
-            rhythmSource.Play();
-        }
+        // Set initial volumes
+        if (rhythmSource != null) rhythmSource.volume = rhythmVolume * masterMusicVolume;
+        if (menuSource != null) menuSource.volume = isMainMenu ? (menuCushionVolume * masterMusicVolume) : 0f;
+        if (gameplaySource != null) gameplaySource.volume = isMainMenu ? 0f : (gameplayCushionVolume * masterMusicVolume);
 
-        // 2. Start layers
-        if (menuSource != null && menuCushionClip != null)
-        {
-            menuSource.volume = isMainMenu ? (menuCushionVolume * masterMusicVolume) : 0f;
-            menuSource.Play();
-        }
-
-        if (gameplaySource != null && gameplayCushionClip != null)
-        {
-            gameplaySource.volume = isMainMenu ? 0f : (gameplayCushionVolume * masterMusicVolume);
-            gameplaySource.Play();
-        }
+        // Schedule all 3 sources to start playing at the EXACT SAME DSP timestamp
+        double dspStartTime = AudioSettings.dspTime + 0.1;
+        if (rhythmSource != null) rhythmSource.PlayScheduled(dspStartTime);
+        if (menuSource != null) menuSource.PlayScheduled(dspStartTime);
+        if (gameplaySource != null) gameplaySource.PlayScheduled(dspStartTime);
     }
 
     private void OnEnable()
@@ -84,14 +80,15 @@ public class MusicManager : MonoBehaviour
 
     private void HandleGameStarted()
     {
-        // Smoothly crossfade from Menu cushion to Gameplay cushion while Rhythm stays unbroken
+        // When gameplay starts: fade out Menu cushion to 0, fade in Gameplay cushion to target volume.
+        // The rhythm loop keeps running undisturbed in 100% synchronization.
         FadeSource(menuSource, 0f, crossfadeDuration, ref menuFadeRoutine);
         FadeSource(gameplaySource, gameplayCushionVolume * masterMusicVolume, crossfadeDuration, ref gameplayFadeRoutine);
     }
 
     private void HandleGameOver()
     {
-        // Duck or fade out gameplay cushion on game over
+        // Smoothly fade out gameplay cushion on game over
         FadeSource(gameplaySource, 0f, 1.2f, ref gameplayFadeRoutine);
     }
 
@@ -134,7 +131,7 @@ public class MusicManager : MonoBehaviour
         source.clip = clip;
         source.loop = true;
         source.playOnAwake = false;
-        source.spatialBlend = 0f; // Pure 2D Stereo
+        source.spatialBlend = 0f; // 2D Stereo
         source.dopplerLevel = 0f;
         source.volume = 0f;
         return source;

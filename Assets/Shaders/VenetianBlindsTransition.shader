@@ -102,6 +102,8 @@ Shader "Custom/UI/VenetianBlindsTransition"
 
             fixed4 frag(v2f IN) : SV_Target
             {
+                if (_Transition <= 0.0001) discard;
+
                 half4 color = tex2D(_MainTex, IN.texcoord) * IN.color;
 
                 #ifdef UNITY_UI_CLIP_RECT
@@ -120,11 +122,10 @@ Shader "Custom/UI/VenetianBlindsTransition"
                 // Calculate the repeating pattern
                 float val = frac(y * _BlindsCount);
                 
-                // Apply transition: if val is less than _Transition, it's visible. 
-                // step(a, b) returns 1 if a <= b, else 0.
-                color.a *= step(val, _Transition);
+                // Apply transition: if val is less than _Transition, it's visible.
+                color.a *= (val < _Transition) ? 1.0 : 0.0;
                 
-                // Optional: clip completely transparent pixels so they don't overdraw
+                // Clip completely transparent pixels so they don't overdraw
                 clip(color.a - 0.001);
 
                 return color;

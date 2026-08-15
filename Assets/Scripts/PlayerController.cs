@@ -43,7 +43,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float knockbackDrag = 20f;
 
     private Rigidbody rb;
-    public float currentSpeed;
+    [System.NonSerialized] public float currentSpeed;
     private Vector3 moveDirection;
     private float knockbackTimer;
     private bool reversing;
@@ -58,8 +58,10 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
+        currentSpeed = 0f;
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
         moveDirection = transform.forward;
         previousYaw = transform.eulerAngles.y;
     }

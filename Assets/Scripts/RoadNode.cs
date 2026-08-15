@@ -11,6 +11,11 @@ public class RoadNode : MonoBehaviour
 {
     public List<RoadNode> connections = new List<RoadNode>();
 
+    private void Awake()
+    {
+        connections.RemoveAll(n => n == null);
+    }
+
     public void Connect(RoadNode other)
     {
         if (other == null || other == this) return;

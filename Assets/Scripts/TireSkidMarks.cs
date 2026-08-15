@@ -10,8 +10,10 @@ public class TireSkidMarks : MonoBehaviour
     [SerializeField] private TrailRenderer leftTrail;
     [SerializeField] private TrailRenderer rightTrail;
 
-    [Tooltip("Loss of grip (PlayerController.DriftFactor01) where the tyres start to mark. " +
-             "Matches CarSmoke/PlayerAudio's threshold so smoke, screech and marks arrive together.")]
+    [Tooltip("Turn rate (PlayerController.TurnRate01) where the tyres start to mark.")]
+    [SerializeField, Range(0f, 1f)] private float turnThreshold = 0.5f;
+
+    [Tooltip("Loss of grip (PlayerController.DriftFactor01) where the tyres start to mark.")]
     [SerializeField, Range(0f, 1f)] private float driftThreshold = 0.35f;
 
     [Tooltip("Below this fraction of max speed the tyres cannot mark, so a car nudged " +
@@ -27,9 +29,10 @@ public class TireSkidMarks : MonoBehaviour
 
     private void Update()
     {
+        bool isTurningOrDrifting = playerController.TurnRate01 >= turnThreshold || playerController.DriftFactor01 >= driftThreshold;
         bool shouldMark = !playerController.IsReversing &&
                            playerController.SpeedFactor01 > minSpeedFactor &&
-                           playerController.DriftFactor01 >= driftThreshold;
+                           isTurningOrDrifting;
 
         if (leftTrail != null) leftTrail.emitting = shouldMark;
         if (rightTrail != null) rightTrail.emitting = shouldMark;

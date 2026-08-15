@@ -36,8 +36,9 @@ public class RoadNetwork : MonoBehaviour
     {
         if (current == null || current.connections.Count == 0) return null;
 
-        var options = current.connections.Where(n => n != cameFrom).ToList();
-        if (options.Count == 0) options = current.connections;
+        var options = current.connections.Where(n => n != null && n != cameFrom).ToList();
+        if (options.Count == 0) options = current.connections.Where(n => n != null).ToList();
+        if (options.Count == 0) return null;
 
         return options[Random.Range(0, options.Count)];
     }

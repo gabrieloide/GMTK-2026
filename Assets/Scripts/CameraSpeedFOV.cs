@@ -11,10 +11,11 @@ public class CameraSpeedFOV : MonoBehaviour
 {
     [SerializeField] private PlayerController player;
     [SerializeField] private float fovKick = 8f;
-    [SerializeField] private float lerpSpeed = 3f;
+    [SerializeField] private float smoothTime = 0.25f;
 
     private CinemachineCamera vcam;
     private float baseFOV;
+    private float fovVelocity;
 
     private void Awake()
     {
@@ -29,7 +30,7 @@ public class CameraSpeedFOV : MonoBehaviour
 
         float targetFOV = baseFOV + fovKick * player.SpeedFactor01;
         var lens = vcam.Lens;
-        lens.FieldOfView = Mathf.Lerp(lens.FieldOfView, targetFOV, Time.deltaTime * lerpSpeed);
+        lens.FieldOfView = Mathf.SmoothDamp(lens.FieldOfView, targetFOV, ref fovVelocity, smoothTime);
         vcam.Lens = lens;
     }
 }

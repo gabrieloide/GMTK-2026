@@ -1,36 +1,27 @@
 using UnityEngine;
 using TMPro;
 
-// Classic arcade score readout: spawn a "+100" at the point it was earned, let it rise with
-// an ease-out drift and fade away right there - the way points read in Mario/Sonic-era
-// games, rather than flying across the screen to the HUD. Built at runtime as a small
-// World Space canvas (UGUI) rather than a 3D mesh TextMeshPro: this project's URP setup
-// only renders TMP text correctly through the Canvas/UGUI path (the 3D TextMeshPro
-// component relies on the classic Distance Field shader, which URP silently drops).
+/// <summary>
+/// Spawns a floating score popup (e.g. "+100") at the delivery point in world space.
+/// Uses a WorldSpace Canvas with TextMeshProUGUI configured with high sorting order
+/// and outline so it's clearly readable over the 3D city and never gets clipped by buildings.
+/// </summary>
 public class ScorePopup : MonoBehaviour
 {
-    // TMP Essential Resources' own default font, loaded by its Resources-relative path
-    // (Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset).
-    private const string DefaultFontResourcePath = "Fonts & Materials/LiberationSans SDF";
+    private const string ModernizFontPath = "Fonts & Materials/Moderniz SDF";
+    private const string LiberationFontPath = "Fonts & Materials/LiberationSans SDF";
 
-    // World Space canvases render their RectTransform at literal pixel scale, so the
-    // canvas itself is scaled down by this factor to bring UI-sized text down to
-    // world-scale units (matches the in-world nameplate/health-bar convention).
-    private const float WorldUnitsPerCanvasPixel = 0.01f;
-    private const float FontSize = 100f;
+    // Canvas scaling to map UI text size into world units
+    private const float WorldUnitsPerPixel = 0.035f;
+    private const float FontSize = 42f;
 
-    // Delivery points sit at car-roof height, so a popup spawned right at the delivery
-    // position renders directly under the player's own car from this game's steep
-    // top-down chase camera - lifting the spawn clears the roofline immediately instead
-    // of waiting on the rise animation to climb out from underneath it.
-    private static readonly Vector3 SpawnHeightOffset = Vector3.up * 3f;
+    private static readonly Vector3 SpawnHeightOffset = Vector3.up * 4.5f;
 
-    [SerializeField] private float baseScale = 2.2f;
-    [SerializeField] private float riseDistance = 1.5f;
-    [SerializeField] private float duration = 0.9f;
-    [SerializeField] private float punchDuration = 0.15f;
-    [SerializeField] private float punchScale = 1.35f;
-    [SerializeField] private float spawnTiltAngle = 14f;
+    [SerializeField] private float riseDistance = 3.5f;
+    [SerializeField] private float duration = 1.1f;
+    [SerializeField] private float punchScale = 1.4f;
+    [SerializeField] private float punchDuration = 0.18f;
+    [SerializeField] private float spawnTiltAngle = 12f;
 
     private TextMeshProUGUI label;
     private Transform cameraTransform;
@@ -46,12 +37,18 @@ public class ScorePopup : MonoBehaviour
         var canvas = go.GetComponent<Canvas>();
         canvas.renderMode = RenderMode.WorldSpace;
         canvas.worldCamera = Camera.main;
+        canvas.overrideSorting = true;
+        canvas.sortingOrder = 3000; // Always render on top of 3D world geometry
 
         var canvasRect = go.GetComponent<RectTransform>();
-        canvasRect.sizeDelta = new Vector2(400f, 150f);
+        canvasRect.sizeDelta = new Vector2(250f, 80f);
+
+        // Pre-set scale immediately so there is no 1-frame giant text flash
+        go.transform.localScale = Vector3.one * (WorldUnitsPerPixel * 1.4f);
 
         var labelObject = new GameObject("Label", typeof(RectTransform));
         labelObject.transform.SetParent(go.transform, false);
+
         var labelRect = labelObject.GetComponent<RectTransform>();
         labelRect.anchorMin = Vector2.zero;
         labelRect.anchorMax = Vector2.one;
@@ -63,9 +60,18 @@ public class ScorePopup : MonoBehaviour
         label.color = color;
         label.fontSize = FontSize;
         label.alignment = TextAlignmentOptions.Center;
+        label.enableWordWrapping = false;
+        label.overflowMode = TextOverflowModes.Overflow;
+        label.fontStyle = FontStyles.Bold;
 
-        var font = Resources.Load<TMP_FontAsset>(DefaultFontResourcePath);
+        // Try loading Moderniz font first (matches HUD), then fallback to LiberationSans
+        var font = Resources.Load<TMP_FontAsset>(ModernizFontPath);
+        if (font == null) font = Resources.Load<TMP_FontAsset>(LiberationFontPath);
         if (font != null) label.font = font;
+
+        // High contrast outline
+        label.outlineWidth = 0.22f;
+        label.outlineColor = new Color(0f, 0f, 0f, 0.9f);
 
         go.AddComponent<ScorePopup>();
     }
@@ -73,9 +79,23 @@ public class ScorePopup : MonoBehaviour
     private void Awake()
     {
         label = GetComponentInChildren<TextMeshProUGUI>();
-        cameraTransform = Camera.main != null ? Camera.main.transform : null;
+        if (Camera.main != null)
+        {
+            cameraTransform = Camera.main.transform;
+        }
+        else
+        {
+            var cam = FindAnyObjectByType<Camera>();
+            if (cam != null) cameraTransform = cam.transform;
+        }
+
         basePosition = transform.position;
         spinDirection = Random.value < 0.5f ? -1f : 1f;
+
+        if (cameraTransform != null)
+        {
+            transform.rotation = cameraTransform.rotation;
+        }
     }
 
     private void Update()
@@ -83,30 +103,40 @@ public class ScorePopup : MonoBehaviour
         timer += Time.deltaTime;
         float t = Mathf.Clamp01(timer / duration);
 
-        // Fast off the mark, settling near the top - a straight lerp reads as mechanical.
+        // Ease-out rise animation
         float eased = 1f - (1f - t) * (1f - t);
         transform.position = basePosition + Vector3.up * (riseDistance * eased);
 
+        // Elastic pop/punch on spawn
         float punchProgress = t < punchDuration ? t / punchDuration : 1f;
         float punch = Mathf.Lerp(punchScale, 1f, punchProgress);
-        transform.localScale = Vector3.one * (WorldUnitsPerCanvasPixel * baseScale * punch);
+        transform.localScale = Vector3.one * (WorldUnitsPerPixel * punch);
 
-        // Pops in tilted and untwists as the punch settles, so each popup reads as a
-        // little flick rather than every "+100" rising in the exact same straight line.
+        // Gentle tilt that settles
         float tilt = spinDirection * spawnTiltAngle * (1f - punchProgress);
 
-        // UI shaders render both faces, so matching the camera's own rotation is enough
-        // to keep the text facing it correctly (not mirrored) at any viewing angle.
-        if (cameraTransform != null) transform.rotation = cameraTransform.rotation * Quaternion.Euler(0f, 0f, tilt);
-
-        const float fadeStart = 0.5f;
-        if (t > fadeStart)
+        if (cameraTransform != null)
         {
-            Color c = label.color;
-            c.a = Mathf.Lerp(1f, 0f, (t - fadeStart) / (1f - fadeStart));
-            label.color = c;
+            transform.rotation = cameraTransform.rotation * Quaternion.Euler(0f, 0f, tilt);
         }
 
-        if (t >= 1f) Destroy(gameObject);
+        // Fade out over the last 40% of duration
+        const float fadeStart = 0.6f;
+        if (t > fadeStart && label != null)
+        {
+            float alpha = Mathf.Lerp(1f, 0f, (t - fadeStart) / (1f - fadeStart));
+            Color c = label.color;
+            c.a = alpha;
+            label.color = c;
+
+            Color oc = label.outlineColor;
+            oc.a = alpha * 0.9f;
+            label.outlineColor = oc;
+        }
+
+        if (t >= 1f)
+        {
+            Destroy(gameObject);
+        }
     }
 }

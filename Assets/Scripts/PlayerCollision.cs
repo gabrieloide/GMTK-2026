@@ -13,27 +13,27 @@ public class PlayerCollision : MonoBehaviour
     [SerializeField] private CinemachineImpulseSource impulseSource;
     [Tooltip("Relative impact speed mapped to impulse force, so a wall or another car " +
              "shakes proportionally to how hard it landed instead of a fixed amount.")]
-    [SerializeField] private float hitImpulseScale = 0.12f;
-    [SerializeField] private float hitImpulseMin = 0.6f;
-    [SerializeField] private float hitImpulseMax = 3f;
+    [SerializeField] private float hitImpulseScale = 0.10f;
+    [SerializeField] private float hitImpulseMin = 0.5f;
+    [SerializeField] private float hitImpulseMax = 1.8f;
 
     [Header("Curb Mount (Sidewalk)")]
     [Tooltip("Tag used by sidewalk colliders. Hitting one of these skips the knockback " +
              "and plays the curb-mount feedback instead - the sidewalk is a step up, not a wall.")]
     [SerializeField] private string sidewalkTag = "Sidewalk";
-    [SerializeField] private float curbImpulseForce = 1f;
+    [SerializeField] private float curbImpulseForce = 0.6f;
     [Tooltip("Visual-only mesh child (not the physics root) that gets punched upward on mount/pickup.")]
     [SerializeField] private Transform carVisual;
-    [SerializeField] private float curbHopHeight = 0.35f;
+    [SerializeField] private float curbHopHeight = 0.9f;
     [SerializeField] private float curbHopDuration = 0.22f;
 
     [Header("Pickup Feedback")]
-    [SerializeField] private float pickupImpulseForce = 0.5f;
-    [SerializeField] private float pickupHopHeight = 0.2f;
+    [SerializeField] private float pickupImpulseForce = 0.4f;
+    [SerializeField] private float pickupHopHeight = 0.4f;
     [SerializeField] private float pickupHopDuration = 0.18f;
 
     [Header("Landing Squash")]
-    [SerializeField] private float squashAmount = 0.25f;
+    [SerializeField] private float squashAmount = 0.2f;
     [SerializeField] private float squashDuration = 0.12f;
 
     private Vector3 carVisualRestLocalPosition;
@@ -45,6 +45,7 @@ public class PlayerCollision : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         playerController = GetComponent<PlayerController>();
+        if (impulseSource == null) impulseSource = GetComponent<CinemachineImpulseSource>();
         if (carVisual != null)
         {
             carVisualRestLocalPosition = carVisual.localPosition;
@@ -62,10 +63,26 @@ public class PlayerCollision : MonoBehaviour
         OrderHolder.OnPickup -= OnOrderPickup;
     }
 
+    private bool IsSidewalk(GameObject go)
+    {
+        if (go == null) return false;
+        return go.CompareTag(sidewalkTag) || go.name.ToLower().Contains("sidewalk");
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (IsSidewalk(other.gameObject))
+        {
+            Debug.Log($"<color=cyan>[Sidewalk Feedback]</color> OnTriggerEnter con acera: '{other.gameObject.name}' -> Activando feedback de acera.");
+            OnMountSidewalk();
+        }
+    }
+
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag(sidewalkTag))
+        if (IsSidewalk(collision.gameObject))
         {
+            Debug.Log($"<color=cyan>[Sidewalk Feedback]</color> OnCollisionEnter con acera: '{collision.gameObject.name}' -> Activando feedback de acera.");
             OnMountSidewalk();
             return;
         }
@@ -82,6 +99,7 @@ public class PlayerCollision : MonoBehaviour
         AudioManager.Instance.PlaySFX("car_hit");
 
         float force = Mathf.Clamp(collision.relativeVelocity.magnitude * hitImpulseScale, hitImpulseMin, hitImpulseMax);
+        Debug.Log($"<color=orange>[Crash Feedback]</color> Choque contra: '{collision.gameObject.name}', Fuerza Shake: {force:F2}");
         GenerateImpulse(force);
 
         PlayCrashDeform(0.4f, 0.15f);
@@ -92,6 +110,7 @@ public class PlayerCollision : MonoBehaviour
     // normally, so this never fights the Rigidbody).
     private void OnMountSidewalk()
     {
+        Debug.Log($"<color=cyan>[Sidewalk Feedback]</color> OnMountSidewalk ejecutado: Camera Shake ({curbImpulseForce}) y Salto del auto (Altura: {curbHopHeight})");
         GenerateImpulse(curbImpulseForce);
         PlayHop(curbHopHeight, curbHopDuration);
     }
@@ -106,7 +125,14 @@ public class PlayerCollision : MonoBehaviour
 
     private void GenerateImpulse(float force)
     {
-        if (impulseSource != null) impulseSource.GenerateImpulse(force);
+        if (impulseSource != null)
+        {
+            impulseSource.GenerateImpulse(force);
+        }
+        else
+        {
+            Debug.LogWarning("[Impulse Warning] impulseSource es NULL en PlayerCollision!");
+        }
     }
 
     private void PlayHop(float height, float duration)

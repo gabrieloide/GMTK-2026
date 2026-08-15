@@ -223,6 +223,7 @@ public class OrderManager : MonoBehaviour
         confettiObj.transform.position = position + Vector3.up * 1.5f;
         
         ParticleSystem ps = confettiObj.AddComponent<ParticleSystem>();
+        ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         var main = ps.main;
         main.duration = 1f;
         main.loop = false;
@@ -232,6 +233,7 @@ public class OrderManager : MonoBehaviour
         main.startColor = new ParticleSystem.MinMaxGradient(Color.green, Color.yellow);
         main.gravityModifier = 2f;
         main.simulationSpace = ParticleSystemSimulationSpace.World;
+        main.playOnAwake = false;
         
         var emission = ps.emission;
         emission.rateOverTime = 0f;
@@ -253,6 +255,8 @@ public class OrderManager : MonoBehaviour
         
         renderer.mesh = quad;
         renderer.material = new Material(Shader.Find("Sprites/Default"));
+
+        ps.Play();
 
         // Destroy after it finishes
         Destroy(confettiObj, 2f);

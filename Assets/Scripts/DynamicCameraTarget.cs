@@ -13,10 +13,11 @@ public class DynamicCameraTarget : MonoBehaviour
     [Tooltip("Maximum distance the camera target pushes forward at top speed.")]
     [SerializeField] private float maxLookAhead = 8f;
     
-    [Tooltip("How fast the camera catches up to the look-ahead position.")]
-    [SerializeField] private float smoothSpeed = 2.5f;
+    [Tooltip("How fast the camera catches up to the look-ahead position (seconds).")]
+    [SerializeField] private float smoothTime = 0.25f;
     
     private Vector3 initialLocalPosition;
+    private Vector3 currentVelocity;
 
     private void Start()
     {
@@ -24,7 +25,7 @@ public class DynamicCameraTarget : MonoBehaviour
         if (player == null) player = GetComponentInParent<PlayerController>();
     }
 
-    private void Update()
+    private void LateUpdate()
     {
         if (player == null) return;
 
@@ -32,9 +33,9 @@ public class DynamicCameraTarget : MonoBehaviour
         float zOffset = player.SpeedFactor01 * maxLookAhead;
         
         // The target local position pushes forward on the Z axis
-        Vector3 targetLocalPos = initialLocalPosition + new Vector3(0, 0, zOffset);
+        Vector3 targetLocalPos = initialLocalPosition + new Vector3(0f, 0f, zOffset);
         
-        // Smoothly interpolate the local position so the camera doesn't snap instantly
-        transform.localPosition = Vector3.Lerp(transform.localPosition, targetLocalPos, Time.deltaTime * smoothSpeed);
+        // Smoothly interpolate the local position so the camera doesn't jitter
+        transform.localPosition = Vector3.SmoothDamp(transform.localPosition, targetLocalPos, ref currentVelocity, smoothTime);
     }
 }

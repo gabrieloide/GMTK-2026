@@ -23,7 +23,7 @@ public class CarLean : MonoBehaviour
     [SerializeField] private float accelPopAngle = -15f;
     [Tooltip("Duration in seconds of the initial wheelie pop before smoothly leveling out.")]
     [SerializeField] private float accelPopDuration = 0.38f;
-    [Tooltip("Cartoon stretch along Z axis during the acceleration kick.")]
+    [Tooltip("Cartoon stretch along length during the acceleration kick.")]
     [SerializeField] private float accelPopStretch = 0.16f;
 
     [Header("Brake Pitch (Nose Down, Rear Up)")]
@@ -31,7 +31,7 @@ public class CarLean : MonoBehaviour
     [SerializeField] private float maxBrakePitchAngle = 18f;
     [SerializeField] private float brakePitchSmoothTime = 0.06f;
     [SerializeField] private float brakeRecoverSmoothTime = 0.12f;
-    [Tooltip("Cartoon squash along Z axis (and bulge on X/Y) during braking.")]
+    [Tooltip("Cartoon squash along length (and bulge in width/height) during braking.")]
     [SerializeField] private float brakeSquashAmount = 0.18f;
 
     [Header("Suspension Lift Compensation")]
@@ -84,7 +84,7 @@ public class CarLean : MonoBehaviour
 
         float dt = Time.deltaTime;
 
-        // 1. Steering Roll / Lean (Z Axis)
+        // 1. Steering Roll / Lean (Z Axis in Root Space)
         float currentYaw = transform.eulerAngles.y;
         float signedDelta = Mathf.DeltaAngle(previousYaw, currentYaw);
         previousYaw = currentYaw;
@@ -131,9 +131,10 @@ public class CarLean : MonoBehaviour
             shake = Mathf.Sin(Time.time * idleShakeSpeed) * idleShakeMagnitude;
         }
 
-        // 5. Total Pitch Calculation & Visual Rotation
+        // 5. Visual Rotation in Root Space (Premultiply visual offset onto restLocalRotation)
         float totalPitch = currentBrakePitch + currentAccelPopPitch;
-        carVisual.localRotation = restLocalRotation * Quaternion.Euler(totalPitch + shake, 0f, currentLean + (shake * 0.5f));
+        Quaternion visualOffset = Quaternion.Euler(totalPitch + shake, 0f, currentLean + (shake * 0.5f));
+        carVisual.localRotation = visualOffset * restLocalRotation;
 
         // 6. Visual Position Lift & Scale Deformations (Squash/Stretch)
         bool collisionDeforming = playerCollision != null && playerCollision.IsDeforming;
@@ -143,12 +144,12 @@ public class CarLean : MonoBehaviour
             float lift = Mathf.Abs(totalPitch) * pitchLiftFactor;
             carVisual.localPosition = restLocalPosition + Vector3.up * lift;
 
-            // Squash & Stretch
+            // Squash & Stretch (CAR-BASE model has its forward length along local X, sideways width along local Z)
             float totalStretch = currentAccelPopStretch - currentBrakeSquash;
             carVisual.localScale = new Vector3(
-                restLocalScale.x * (1f - totalStretch * 0.5f),
-                restLocalScale.y * (1f - totalStretch * 0.5f),
-                restLocalScale.z * (1f + totalStretch)
+                restLocalScale.x * (1f + totalStretch),        // Length (Local X)
+                restLocalScale.y * (1f - totalStretch * 0.5f), // Height (Local Y)
+                restLocalScale.z * (1f - totalStretch * 0.5f)  // Width  (Local Z)
             );
         }
     }

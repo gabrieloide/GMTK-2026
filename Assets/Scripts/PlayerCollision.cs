@@ -180,9 +180,9 @@ public class PlayerCollision : MonoBehaviour
             float squash = Mathf.Sin(t * Mathf.PI) * amount;
             
             carVisual.localScale = new Vector3(
-                carVisualRestLocalScale.x * (1f + squash * 0.5f), // bulge sideways
-                carVisualRestLocalScale.y * (1f + squash * 0.5f), // bulge upwards
-                carVisualRestLocalScale.z * (1f - squash)         // squash forwards (Z)
+                carVisualRestLocalScale.x * (1f - squash),         // squash along forward length (Local X)
+                carVisualRestLocalScale.y * (1f + squash * 0.5f), // bulge upwards (Local Y)
+                carVisualRestLocalScale.z * (1f + squash * 0.5f)  // bulge sideways (Local Z)
             );
             yield return null;
         }

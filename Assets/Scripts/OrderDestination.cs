@@ -19,10 +19,13 @@ public class OrderDestination : MonoBehaviour
 
         if (OrderManager.IsPlayerAtPoint(OrderManager.GetPickupPoint(transform), transform.rotation))
         {
-            OrderManager.Instance.OnFinishOrder();
             isActive = false;
             isPickedUp = false;
             orderHolder = null;
+            if (OrderManager.Instance != null)
+            {
+                OrderManager.Instance.OnFinishOrder();
+            }
         }
     }
 

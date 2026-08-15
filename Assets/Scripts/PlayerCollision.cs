@@ -17,15 +17,13 @@ public class PlayerCollision : MonoBehaviour
     [SerializeField] private float hitImpulseMin = 0.5f;
     [SerializeField] private float hitImpulseMax = 1.8f;
 
-    [Header("Curb Mount (Sidewalk)")]
-    [Tooltip("Tag used by sidewalk colliders. Hitting one of these skips the knockback " +
-             "and plays the curb-mount feedback instead - the sidewalk is a step up, not a wall.")]
+    [Header("Sidewalk")]
+    [Tooltip("Tag used by sidewalk colliders. Hitting one of these skips wall knockback and crash feedback.")]
     [SerializeField] private string sidewalkTag = "Sidewalk";
-    [SerializeField] private float curbImpulseForce = 0.6f;
-    [Tooltip("Visual-only mesh child (not the physics root) that gets punched upward on mount/pickup.")]
+
+    [Header("Visual Feedback")]
+    [Tooltip("Visual-only mesh child (not the physics root) that gets deformed on crash or hopped on pickup.")]
     [SerializeField] private Transform carVisual;
-    [SerializeField] private float curbHopHeight = 0.9f;
-    [SerializeField] private float curbHopDuration = 0.22f;
 
     [Header("Pickup Feedback")]
     [SerializeField] private float pickupImpulseForce = 0.4f;
@@ -40,6 +38,8 @@ public class PlayerCollision : MonoBehaviour
     private Vector3 carVisualRestLocalScale = Vector3.one;
     private Coroutine hopRoutine;
     private Coroutine crashDeformRoutine;
+
+    public bool IsDeforming => hopRoutine != null || crashDeformRoutine != null;
 
     void Start()
     {
@@ -69,21 +69,11 @@ public class PlayerCollision : MonoBehaviour
         return go.CompareTag(sidewalkTag) || go.name.ToLower().Contains("sidewalk");
     }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (IsSidewalk(other.gameObject))
-        {
-            Debug.Log($"<color=cyan>[Sidewalk Feedback]</color> OnTriggerEnter con acera: '{other.gameObject.name}' -> Activando feedback de acera.");
-            OnMountSidewalk();
-        }
-    }
-
     void OnCollisionEnter(Collision collision)
     {
+        // Ignorar aceras para que no cuenten como choque con pared ni apliquen shake/movimiento
         if (IsSidewalk(collision.gameObject))
         {
-            Debug.Log($"<color=cyan>[Sidewalk Feedback]</color> OnCollisionEnter con acera: '{collision.gameObject.name}' -> Activando feedback de acera.");
-            OnMountSidewalk();
             return;
         }
 
@@ -103,16 +93,6 @@ public class PlayerCollision : MonoBehaviour
         GenerateImpulse(force);
 
         PlayCrashDeform(0.4f, 0.15f);
-    }
-
-    // The curb is a step up, not an obstacle: no knockback, just a jolt to sell the height
-    // change - a camera impulse and a hop on the visual mesh (the physics root keeps driving
-    // normally, so this never fights the Rigidbody).
-    private void OnMountSidewalk()
-    {
-        Debug.Log($"<color=cyan>[Sidewalk Feedback]</color> OnMountSidewalk ejecutado: Camera Shake ({curbImpulseForce}) y Salto del auto (Altura: {curbHopHeight})");
-        GenerateImpulse(curbImpulseForce);
-        PlayHop(curbHopHeight, curbHopDuration);
     }
 
     // Lighter twin of the curb bump - enough weight to feel like the parcel just landed

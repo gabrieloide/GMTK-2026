@@ -87,7 +87,7 @@ public class TransitionManager : MonoBehaviour
     /// <param name="onScreenCovered">Logic to execute right in the middle (when screen is fully black/covered). Ideal for swapping panels.</param>
     public void PlayTransition(Action onScreenCovered, Action onTransitionFinished = null)
     {
-        if (isTransitioning) return;
+        StopAllCoroutines();
         StartCoroutine(TransitionRoutine(onScreenCovered, onTransitionFinished));
     }
 

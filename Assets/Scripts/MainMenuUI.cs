@@ -28,7 +28,54 @@ public class MainMenuUI : MonoBehaviour
     {
         if (GameManager.Instance == null || GameManager.Instance.State != GameState.MainMenu) return;
 
-        if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
+        bool startTriggered = false;
+
+        // 1. New Input System Keyboard (Space, Enter, NumpadEnter)
+        if (Keyboard.current != null)
+        {
+            if (Keyboard.current.spaceKey.wasPressedThisFrame ||
+                Keyboard.current.enterKey.wasPressedThisFrame ||
+                Keyboard.current.numpadEnterKey.wasPressedThisFrame)
+            {
+                startTriggered = true;
+            }
+        }
+
+        // 2. New Input System Gamepad (A/Cross or Start)
+        if (Gamepad.current != null)
+        {
+            if (Gamepad.current.buttonSouth.wasPressedThisFrame ||
+                Gamepad.current.startButton.wasPressedThisFrame)
+            {
+                startTriggered = true;
+            }
+        }
+
+        // 3. New Input System Mouse / Touch (Click/tap anywhere)
+        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            startTriggered = true;
+        }
+        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
+        {
+            startTriggered = true;
+        }
+
+        // 4. Legacy Input Fallback (in case active input handling differs)
+        if (Input.anyKeyDown || Input.GetMouseButtonDown(0))
+        {
+            startTriggered = true;
+        }
+
+        if (startTriggered)
+        {
+            StartGame();
+        }
+    }
+
+    public void StartGame()
+    {
+        if (GameManager.Instance != null)
         {
             GameManager.Instance.StartGame();
         }

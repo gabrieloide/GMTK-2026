@@ -31,6 +31,7 @@ public class DeliveryArrowController : MonoBehaviour
     {
         if (OrderManager.Instance == null || player == null || arrowModel == null) return;
         
+        bool isPlaying = GameManager.Instance != null && GameManager.Instance.State == GameState.Playing;
         Transform target = OrderManager.Instance.GetCurrentTargetTransform();
         if (target == null || !isPlaying)
         {

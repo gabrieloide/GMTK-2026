@@ -20,23 +20,23 @@ public class CarLean : MonoBehaviour
 
     [Header("Acceleration Pop (Wheelie)")]
     [Tooltip("Pitch angle (degrees) the nose tilts UP when beginning to accelerate. Negative values lift the front wheels.")]
-    [SerializeField] private float accelPopAngle = -15f;
+    [SerializeField] private float accelPopAngle = -20f;
     [Tooltip("Duration in seconds of the initial wheelie pop before smoothly leveling out.")]
-    [SerializeField] private float accelPopDuration = 0.38f;
+    [SerializeField] private float accelPopDuration = 0.42f;
     [Tooltip("Cartoon stretch along length during the acceleration kick.")]
-    [SerializeField] private float accelPopStretch = 0.16f;
+    [SerializeField] private float accelPopStretch = 0.18f;
 
     [Header("Brake Pitch (Nose Down, Rear Up)")]
     [Tooltip("Pitch angle (degrees) the car tilts forward when braking. Positive values dip the nose and raise the rear wheels.")]
-    [SerializeField] private float maxBrakePitchAngle = 18f;
-    [SerializeField] private float brakePitchSmoothTime = 0.06f;
+    [SerializeField] private float maxBrakePitchAngle = 22f;
+    [SerializeField] private float brakePitchSmoothTime = 0.05f;
     [SerializeField] private float brakeRecoverSmoothTime = 0.12f;
     [Tooltip("Cartoon squash along length (and bulge in width/height) during braking.")]
     [SerializeField] private float brakeSquashAmount = 0.18f;
 
     [Header("Suspension Lift Compensation")]
     [Tooltip("Slight upward visual shift per degree of pitch so contact wheels stay on the road without clipping into the floor.")]
-    [SerializeField] private float pitchLiftFactor = 0.01f;
+    [SerializeField] private float pitchLiftFactor = 0.02f;
 
     [Header("Idle Shake")]
     [SerializeField] private float idleShakeMagnitude = 0.3f;

@@ -258,28 +258,56 @@ public class OrderManager : MonoBehaviour
     private void SpawnConfetti(Vector3 position)
     {
         GameObject confettiObj = new GameObject("ConfettiBurst");
-        confettiObj.transform.position = position + Vector3.up * 1.5f;
+        confettiObj.transform.position = position + Vector3.up * 2f;
         
         ParticleSystem ps = confettiObj.AddComponent<ParticleSystem>();
         ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         var main = ps.main;
         main.duration = 1f;
         main.loop = false;
-        main.startLifetime = 1.5f;
-        main.startSpeed = new ParticleSystem.MinMaxCurve(5f, 15f);
-        main.startSize = new ParticleSystem.MinMaxCurve(0.2f, 0.4f);
-        main.startColor = new ParticleSystem.MinMaxGradient(Color.green, Color.yellow);
-        main.gravityModifier = 2f;
+        main.startLifetime = new ParticleSystem.MinMaxCurve(1.6f, 2.4f);
+        main.startSpeed = new ParticleSystem.MinMaxCurve(12f, 28f);
+        main.startSize = new ParticleSystem.MinMaxCurve(2.0f, 3.8f);
+        
+        // Multi-color celebratory gradient: Gold, Cyan, Magenta, Lime, Orange
+        Gradient grad = new Gradient();
+        grad.SetKeys(
+            new GradientColorKey[] { 
+                new GradientColorKey(new Color(1f, 0.85f, 0.1f), 0.0f),  // Gold
+                new GradientColorKey(new Color(0.1f, 1f, 0.6f), 0.25f),  // Neon Green
+                new GradientColorKey(new Color(0.2f, 0.8f, 1f), 0.5f),   // Cyan
+                new GradientColorKey(new Color(1f, 0.2f, 0.6f), 0.75f),  // Pink/Magenta
+                new GradientColorKey(new Color(1f, 0.5f, 0.1f), 1.0f)   // Orange
+            },
+            new GradientAlphaKey[] { 
+                new GradientAlphaKey(1f, 0.0f),
+                new GradientAlphaKey(1f, 0.8f),
+                new GradientAlphaKey(0f, 1.0f)
+            }
+        );
+        main.startColor = new ParticleSystem.MinMaxGradient(grad);
+        main.gravityModifier = 1.2f;
         main.simulationSpace = ParticleSystemSimulationSpace.World;
         main.playOnAwake = false;
         
         var emission = ps.emission;
         emission.rateOverTime = 0f;
-        emission.SetBursts(new ParticleSystem.Burst[] { new ParticleSystem.Burst(0f, 40) });
+        emission.SetBursts(new ParticleSystem.Burst[] { new ParticleSystem.Burst(0f, 75) });
         
         var shape = ps.shape;
         shape.shapeType = ParticleSystemShapeType.Sphere;
-        shape.radius = 0.5f;
+        shape.radius = 1.2f;
+
+        // 3D tumbling rotation for festive confetti flutter
+        var rotationOverLifetime = ps.rotationOverLifetime;
+        rotationOverLifetime.enabled = true;
+        rotationOverLifetime.x = new ParticleSystem.MinMaxCurve(-5f, 5f);
+        rotationOverLifetime.y = new ParticleSystem.MinMaxCurve(-5f, 5f);
+        rotationOverLifetime.z = new ParticleSystem.MinMaxCurve(-6f, 6f);
+
+        var sizeOverLifetime = ps.sizeOverLifetime;
+        sizeOverLifetime.enabled = true;
+        sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.EaseInOut(0f, 1f, 1f, 0.6f));
 
         var renderer = ps.GetComponent<ParticleSystemRenderer>();
         renderer.renderMode = ParticleSystemRenderMode.Mesh;
@@ -297,7 +325,7 @@ public class OrderManager : MonoBehaviour
         ps.Play();
 
         // Destroy after it finishes
-        Destroy(confettiObj, 2f);
+        Destroy(confettiObj, 3f);
     }
 
     void OnDrawGizmos()

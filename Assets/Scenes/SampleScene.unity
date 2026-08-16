@@ -13075,7 +13075,7 @@ Transform:
   m_GameObject: {fileID: 535902184}
   serializedVersion: 2
   m_LocalRotation: {x: 0.46174863, y: 0, z: 0, w: 0.8870109}
-  m_LocalPosition: {x: -87.7, y: 71.25, z: -45.155}
+  m_LocalPosition: {x: -87.7, y: 71.25, z: -44.432}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -30969,7 +30969,7 @@ Camera:
     height: 1
   near clip plane: 0.1
   far clip plane: 5000
-  field of view: 68.3
+  field of view: 60.000004
   orthographic: 0
   orthographic size: 10
   m_Depth: 0
@@ -31027,8 +31027,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1032537513}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.46174863, y: 0, z: 0, w: 0.8870109}
-  m_LocalPosition: {x: -87.7, y: 71.25, z: -45.155}
+  m_LocalRotation: {x: 0.04995011, y: 0.7259467, z: -0.05302246, w: 0.6838823}
+  m_LocalPosition: {x: -170, y: 104, z: 211}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -42064,7 +42064,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -87.7, y: 1.25, z: -12.7}
-  m_LocalScale: {x: 0.75, y: 0.75, z: 0.75}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 892638523}
@@ -44948,26 +44948,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: StarterTools.Runtime::Code.Scripts.Audio.AudioManager
   _database: {fileID: 11400000, guid: 9a7ad6772d1c9490490327fa7a064318, type: 2}
   _initialPoolSize: 10
---- !u!114 &1598148192
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1598148189}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a3b4c5d6e7f809123456789012345678, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MusicManager
-  rhythmLoopClip: {fileID: 8300000, guid: 77f8fe3c28f972149bbd59a0bddaed71, type: 3}
-  menuCushionClip: {fileID: 8300000, guid: c53d1ae606b4bfc439ad6aa465b5c749, type: 3}
-  gameplayCushionClip: {fileID: 8300000, guid: c539a9d151d7aea4f93316cf5c7436c8, type: 3}
-  masterMusicVolume: 0.85
-  rhythmVolume: 0.9
-  menuCushionVolume: 0.6
-  gameplayCushionVolume: 0.65
-  crossfadeDuration: 0.8
 --- !u!4 &1598148191
 Transform:
   m_ObjectHideFlags: 0
@@ -44983,6 +44963,26 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1598148192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1598148189}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3b4c5d6e7f809123456789012345678, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MusicManager
+  rhythmLoopClip: {fileID: 8300000, guid: 77f8fe3c28f972149bbd59a0bddaed71, type: 3}
+  menuCushionClip: {fileID: 8300000, guid: c53d1ae606b4bfc439ad6aa465b5c749, type: 3}
+  gameplayCushionClip: {fileID: 8300000, guid: c539a9d151d7aea4f93316cf5c7436c8, type: 3}
+  masterMusicVolume: 0.057
+  rhythmVolume: 0.9
+  menuCushionVolume: 0.6
+  gameplayCushionVolume: 0.65
+  crossfadeDuration: 1.2
 --- !u!1 &1600626073
 GameObject:
   m_ObjectHideFlags: 0

@@ -13075,7 +13075,7 @@ Transform:
   m_GameObject: {fileID: 535902184}
   serializedVersion: 2
   m_LocalRotation: {x: 0.46174863, y: 0, z: 0, w: 0.8870109}
-  m_LocalPosition: {x: -87.7, y: 71.25, z: -44.432}
+  m_LocalPosition: {x: -90.24, y: 71.25, z: -41.54}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -31666,27 +31666,26 @@ MonoBehaviour:
   targetGizmoHeight: 30
   pickupGizmoColor: {r: 0.2, g: 1, b: 0.4, a: 1}
   dropoffGizmoColor: {r: 1, g: 0.4, b: 0.1, a: 1}
+  confettiTexture: {fileID: 2800000, guid: fd1ed831973b7a04796f441a4a3eed75, type: 3}
   difficultyTiers:
   - deliveriesRequired: 0
     minDistance: 40
     maxDistance: 100
-    timeBonus: 15
   - deliveriesRequired: 3
     minDistance: 80
     maxDistance: 160
-    timeBonus: 13
   - deliveriesRequired: 6
     minDistance: 140
     maxDistance: 240
-    timeBonus: 11
   - deliveriesRequired: 10
     minDistance: 200
     maxDistance: 350
-    timeBonus: 9
   - deliveriesRequired: 15
     minDistance: 300
     maxDistance: 500
-    timeBonus: 7
+  secondsPerDistanceUnit: 0.25
+  deliveryTimeBuffer: 8
+  minDeliveryTime: 12
 --- !u!4 &1048682050
 Transform:
   m_ObjectHideFlags: 0
@@ -42063,9 +42062,9 @@ Transform:
   m_GameObject: {fileID: 1481023103}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -87.7, y: 1.25, z: -12.7}
-  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
-  m_ConstrainProportionsScale: 0
+  m_LocalPosition: {x: -90.24, y: 1.25, z: -12.7}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 892638523}
   - {fileID: 2061446363}
@@ -44983,6 +44982,20 @@ MonoBehaviour:
   menuCushionVolume: 0.6
   gameplayCushionVolume: 0.65
   crossfadeDuration: 1.2
+  stationClips:
+  - {fileID: 8300000, guid: 18ec6117ba155b9439620f5f90dae0b5, type: 3}
+  - {fileID: 8300000, guid: a40706ede4fef9442b3fe7e31e7c6a02, type: 3}
+  - {fileID: 8300000, guid: 3722ab895856e6b4aa9ab2607709af33, type: 3}
+  - {fileID: 8300000, guid: 8fca62f251a1ab84980203c704b5607b, type: 3}
+  - {fileID: 8300000, guid: 9d15c622b0b344e45adae41c705453e0, type: 3}
+  - {fileID: 8300000, guid: bd98d97936a399a45814325b4da4c4f9, type: 3}
+  - {fileID: 8300000, guid: 1d51f5b54705de748b2a2e37e0ad28e5, type: 3}
+  stationSwitchStingers:
+  - {fileID: 8300000, guid: a8e99efb593113b438a968436c4f95d0, type: 3}
+  - {fileID: 8300000, guid: ab28e5fbcd66ee842a90de1c1fe477c6, type: 3}
+  stationVolume: 0.8
+  stingerVolume: 0.7
+  stationCrossfadeDuration: 0.5
 --- !u!1 &1600626073
 GameObject:
   m_ObjectHideFlags: 0

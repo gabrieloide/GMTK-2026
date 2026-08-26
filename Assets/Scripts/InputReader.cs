@@ -13,6 +13,10 @@ namespace Game
 
         public bool AcceleratePressed => Actions != null && Actions.Player.Accelerate.IsPressed();
 
+        public bool NextTrackPressed => Actions != null && Actions.Player.Next.WasPressedThisFrame();
+
+        public bool PreviousTrackPressed => Actions != null && Actions.Player.Previous.WasPressedThisFrame();
+
         protected override void Awake()
         {
             base.Awake();

@@ -12,7 +12,6 @@ public class OrderManager : MonoBehaviour
         public int deliveriesRequired;
         public float minDistance;
         public float maxDistance;
-        public float timeBonus;
     }
 
     [SerializeField] public Vector3 offset = Vector3.zero;
@@ -28,15 +27,27 @@ public class OrderManager : MonoBehaviour
     [SerializeField] private Color pickupGizmoColor = new Color(0.2f, 1f, 0.4f);
     [SerializeField] private Color dropoffGizmoColor = new Color(1f, 0.4f, 0.1f);
 
+    [Header("Delivery Confetti")]
+    [Tooltip("Texture used on the cash particles that burst out on delivery.")]
+    [SerializeField] private Texture2D confettiTexture;
+
     [SerializeField]
     private DifficultyTier[] difficultyTiers = new DifficultyTier[]
     {
-        new DifficultyTier { deliveriesRequired = 0, minDistance = 40f, maxDistance = 100f, timeBonus = 15f },
-        new DifficultyTier { deliveriesRequired = 3, minDistance = 80f, maxDistance = 160f, timeBonus = 13f },
-        new DifficultyTier { deliveriesRequired = 6, minDistance = 140f, maxDistance = 240f, timeBonus = 11f },
-        new DifficultyTier { deliveriesRequired = 10, minDistance = 200f, maxDistance = 350f, timeBonus = 9f },
-        new DifficultyTier { deliveriesRequired = 15, minDistance = 300f, maxDistance = 500f, timeBonus = 7f },
+        new DifficultyTier { deliveriesRequired = 0, minDistance = 40f, maxDistance = 100f },
+        new DifficultyTier { deliveriesRequired = 3, minDistance = 80f, maxDistance = 160f },
+        new DifficultyTier { deliveriesRequired = 6, minDistance = 140f, maxDistance = 240f },
+        new DifficultyTier { deliveriesRequired = 10, minDistance = 200f, maxDistance = 350f },
+        new DifficultyTier { deliveriesRequired = 15, minDistance = 300f, maxDistance = 500f },
     };
+
+    [Header("Delivery Timer")]
+    [Tooltip("Seconds of driving time granted per world unit of distance between pickup and drop-off.")]
+    [SerializeField] private float secondsPerDistanceUnit = 0.25f;
+    [Tooltip("Flat seconds added on top of the distance-based time, for parking/turning/mistakes.")]
+    [SerializeField] private float deliveryTimeBuffer = 8f;
+    [Tooltip("Absolute minimum time granted for any single delivery, regardless of distance.")]
+    [SerializeField] private float minDeliveryTime = 12f;
 
     private List<OrderHolder> allOrderHolders = new List<OrderHolder>();
     private List<OrderDestination> allOrderDestinations = new List<OrderDestination>();
@@ -52,7 +63,10 @@ public class OrderManager : MonoBehaviour
 
     public static Action<Vector3> OnOrderFinished;
     public static Action OnOrderAdded;
-    public static Action<float> OnTimeBonusAwarded;
+
+    // Fired whenever a new order starts (including the first one), with the fresh time
+    // budget for that specific delivery, distance-based rather than one accumulating clock.
+    public static Action<float> OnDeliveryTimeLimitSet;
 
     private Transform playerTransform;
     public static OrderManager Instance { get; private set; }
@@ -140,7 +154,7 @@ public class OrderManager : MonoBehaviour
     {
         if (difficultyTiers == null || difficultyTiers.Length == 0)
         {
-            return new DifficultyTier { deliveriesRequired = 0, minDistance = 40f, maxDistance = 100f, timeBonus = 15f };
+            return new DifficultyTier { deliveriesRequired = 0, minDistance = 40f, maxDistance = 100f };
         }
 
         var tier = difficultyTiers[0];
@@ -219,6 +233,12 @@ public class OrderManager : MonoBehaviour
         newOrderDestination.isActive = true;
         newOrderDestination.isPickedUp = false;
 
+        // Time budget scales with the actual pickup-to-dropoff distance, so the clock
+        // measures time for THIS delivery rather than one timer running for the whole game.
+        float deliveryDistance = Vector3.Distance(newOrderHolder.transform.position, newOrderDestination.transform.position);
+        float deliveryTimeLimit = Mathf.Max(minDeliveryTime, deliveryDistance * secondsPerDistanceUnit + deliveryTimeBuffer);
+        OnDeliveryTimeLimitSet?.Invoke(deliveryTimeLimit);
+
         OnOrderAdded?.Invoke();
     }
 
@@ -237,7 +257,6 @@ public class OrderManager : MonoBehaviour
         AudioManager.Instance.PlaySFX("order_delivered");
 
         deliveriesCompleted++;
-        OnTimeBonusAwarded?.Invoke(GetCurrentTier().timeBonus);
         AudioManager.Instance.PlaySFX("time_bonus");
 
         AddOrder();
@@ -267,19 +286,18 @@ public class OrderManager : MonoBehaviour
         main.loop = false;
         main.startLifetime = new ParticleSystem.MinMaxCurve(1.6f, 2.4f);
         main.startSpeed = new ParticleSystem.MinMaxCurve(12f, 28f);
-        main.startSize = new ParticleSystem.MinMaxCurve(2.0f, 3.8f);
+        main.startSize = new ParticleSystem.MinMaxCurve(5.5f, 10f);
         
-        // Multi-color celebratory gradient: Gold, Cyan, Magenta, Lime, Orange
+        // Near-white gradient with a faint gold shimmer so the cash texture reads as
+        // itself instead of being rainbow-tinted; only alpha fades it out at the end.
         Gradient grad = new Gradient();
         grad.SetKeys(
-            new GradientColorKey[] { 
-                new GradientColorKey(new Color(1f, 0.85f, 0.1f), 0.0f),  // Gold
-                new GradientColorKey(new Color(0.1f, 1f, 0.6f), 0.25f),  // Neon Green
-                new GradientColorKey(new Color(0.2f, 0.8f, 1f), 0.5f),   // Cyan
-                new GradientColorKey(new Color(1f, 0.2f, 0.6f), 0.75f),  // Pink/Magenta
-                new GradientColorKey(new Color(1f, 0.5f, 0.1f), 1.0f)   // Orange
+            new GradientColorKey[] {
+                new GradientColorKey(new Color(1f, 1f, 1f), 0.0f),
+                new GradientColorKey(new Color(1f, 0.92f, 0.7f), 0.5f),
+                new GradientColorKey(new Color(1f, 1f, 1f), 1.0f)
             },
-            new GradientAlphaKey[] { 
+            new GradientAlphaKey[] {
                 new GradientAlphaKey(1f, 0.0f),
                 new GradientAlphaKey(1f, 0.8f),
                 new GradientAlphaKey(0f, 1.0f)
@@ -312,15 +330,20 @@ public class OrderManager : MonoBehaviour
         var renderer = ps.GetComponent<ParticleSystemRenderer>();
         renderer.renderMode = ParticleSystemRenderMode.Mesh;
         
-        // Create a simple quad mesh for the confetti
+        // Create a simple quad mesh for the confetti, proportioned like a bill (~2.35:1)
+        // so the cash texture doesn't look stretched.
         Mesh quad = new Mesh();
-        quad.vertices = new Vector3[] { new Vector3(-0.5f,-0.5f,0), new Vector3(0.5f,-0.5f,0), new Vector3(-0.5f,0.5f,0), new Vector3(0.5f,0.5f,0) };
+        const float halfWidth = 0.5f;
+        const float halfHeight = 0.21f;
+        quad.vertices = new Vector3[] { new Vector3(-halfWidth,-halfHeight,0), new Vector3(halfWidth,-halfHeight,0), new Vector3(-halfWidth,halfHeight,0), new Vector3(halfWidth,halfHeight,0) };
         quad.uv = new Vector2[] { new Vector2(0,0), new Vector2(1,0), new Vector2(0,1), new Vector2(1,1) };
         quad.triangles = new int[] { 0, 2, 1, 2, 3, 1 };
         quad.RecalculateNormals();
-        
+
         renderer.mesh = quad;
-        renderer.material = new Material(Shader.Find("Sprites/Default"));
+        Material confettiMaterial = new Material(Shader.Find("Sprites/Default"));
+        if (confettiTexture != null) confettiMaterial.mainTexture = confettiTexture;
+        renderer.material = confettiMaterial;
 
         ps.Play();
 

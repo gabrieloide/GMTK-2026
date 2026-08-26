@@ -4,8 +4,11 @@ using Code.Scripts.Audio;
 
 public class TimerManager : MonoBehaviour
 {
+    [Tooltip("Time budget for the very first delivery, before OrderManager has picked a destination and set a distance-based limit. Also used as a fallback if that event is ever missed.")]
     [SerializeField] private float startTimer = 40f;
     [SerializeField] private int lowTimeWarningThreshold = 10;
+
+    private float timeRemaining = 0f;
     private float currentTime = 0f;
     private int lastWarningTick = -1;
     public float CurrentTime => currentTime;
@@ -17,21 +20,22 @@ public class TimerManager : MonoBehaviour
 
     private void Start()
     {
-        currentTime = startTimer;
-        OrderManager.OnTimeBonusAwarded += AddTime;
+        timeRemaining = startTimer;
+        currentTime = timeRemaining;
+        OrderManager.OnDeliveryTimeLimitSet += ResetTimeForNextDelivery;
     }
 
     private void OnDestroy()
     {
-        OrderManager.OnTimeBonusAwarded -= AddTime;
+        OrderManager.OnDeliveryTimeLimitSet -= ResetTimeForNextDelivery;
     }
 
     private void Update()
     {
         if (GameManager.Instance == null || GameManager.Instance.State != GameState.Playing || GameManager.Instance.isGameOver || !GameManager.Instance.IsGameUnfrozen) return;
 
-        startTimer -= Time.deltaTime;
-        currentTime = Mathf.FloorToInt(startTimer);
+        timeRemaining -= Time.deltaTime;
+        currentTime = Mathf.FloorToInt(timeRemaining);
         if(currentTime <= 0)
         {
             GameManager.Instance.isGameOver = true;
@@ -50,9 +54,12 @@ public class TimerManager : MonoBehaviour
             }
         }
     }
-    public void AddTime(float amount)
+
+    // Each delivery hands the player a fresh window for the next one - the clock measures
+    // time between deliveries, not one timer that runs and accumulates for the whole game.
+    public void ResetTimeForNextDelivery(float seconds)
     {
-        startTimer += amount;
+        timeRemaining = seconds;
         lastWarningTick = -1;
     }
 

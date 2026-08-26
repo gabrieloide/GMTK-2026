@@ -1,4 +1,5 @@
 using System.Collections;
+using Game;
 using UnityEngine;
 
 public class MusicManager : MonoBehaviour
@@ -23,12 +24,29 @@ public class MusicManager : MonoBehaviour
     [Tooltip("Crossfade duration between menu and gameplay cushions.")]
     [SerializeField] private float crossfadeDuration = 0.8f;
 
+    [Header("Radio Stations")]
+    [Tooltip("Full songs cycled through with Next/Previous (keys 1/2, Z/X, or gamepad D-pad). Station 0 is always the layered mix above.")]
+    [SerializeField] private AudioClip[] stationClips;
+    [Tooltip("Short static/tuning stingers played once when switching stations, picked at random.")]
+    [SerializeField] private AudioClip[] stationSwitchStingers;
+    [Range(0f, 1f)] [SerializeField] private float stationVolume = 0.8f;
+    [Range(0f, 1f)] [SerializeField] private float stingerVolume = 0.7f;
+    [Tooltip("Crossfade duration when switching radio stations.")]
+    [SerializeField] private float stationCrossfadeDuration = 0.5f;
+
     private AudioSource rhythmSource;
     private AudioSource menuSource;
     private AudioSource gameplaySource;
+    private AudioSource stationSource;
+    private AudioSource stingerSource;
 
     private Coroutine menuFadeRoutine;
     private Coroutine gameplayFadeRoutine;
+    private Coroutine rhythmFadeRoutine;
+    private Coroutine stationFadeRoutine;
+
+    // 0 = the layered mix above; 1..stationClips.Length = an index into stationClips.
+    private int currentStation;
 
     private void Awake()
     {
@@ -40,9 +58,11 @@ public class MusicManager : MonoBehaviour
         Instance = this;
 
         // Initialize 2D stereo looping sources
-        rhythmSource = CreateSource("RhythmLoop_AudioSource", rhythmLoopClip);
-        menuSource = CreateSource("MenuCushion_AudioSource", menuCushionClip);
-        gameplaySource = CreateSource("GameplayCushion_AudioSource", gameplayCushionClip);
+        rhythmSource = CreateSource("RhythmLoop_AudioSource", rhythmLoopClip, loop: true);
+        menuSource = CreateSource("MenuCushion_AudioSource", menuCushionClip, loop: true);
+        gameplaySource = CreateSource("GameplayCushion_AudioSource", gameplayCushionClip, loop: true);
+        stationSource = CreateSource("RadioStation_AudioSource", null, loop: true);
+        stingerSource = CreateSource("RadioStinger_AudioSource", null, loop: false);
     }
 
     private void Start()
@@ -78,8 +98,19 @@ public class MusicManager : MonoBehaviour
         GameManager.OnGameOver -= HandleGameOver;
     }
 
+    private void Update()
+    {
+        if (InputReader.Instance == null || stationClips == null || stationClips.Length == 0) return;
+
+        if (InputReader.Instance.NextTrackPressed) ChangeStation(1);
+        else if (InputReader.Instance.PreviousTrackPressed) ChangeStation(-1);
+    }
+
     private void HandleGameStarted()
     {
+        // Tuned to a radio station: the layered mix is silent, leave it alone.
+        if (currentStation != 0) return;
+
         // When gameplay starts: fade out Menu cushion to 0, fade in Gameplay cushion to target volume.
         // The rhythm loop keeps running undisturbed in 100% synchronization.
         FadeSource(menuSource, 0f, crossfadeDuration, ref menuFadeRoutine);
@@ -88,8 +119,52 @@ public class MusicManager : MonoBehaviour
 
     private void HandleGameOver()
     {
+        if (currentStation != 0) return;
+
         // Smoothly fade out gameplay cushion on game over
         FadeSource(gameplaySource, 0f, 1.2f, ref gameplayFadeRoutine);
+    }
+
+    // Radio: cycles Next(+1)/Previous(-1) between the layered mix (station 0) and each
+    // song in stationClips. Switching away mutes the layered mix entirely - like a real
+    // radio, the previous station stops being heard the moment you change the channel.
+    private void ChangeStation(int direction)
+    {
+        int totalStations = stationClips.Length + 1;
+        currentStation = ((currentStation + direction) % totalStations + totalStations) % totalStations;
+
+        PlaySwitchStinger();
+
+        if (currentStation == 0)
+        {
+            FadeSource(stationSource, 0f, stationCrossfadeDuration, ref stationFadeRoutine);
+            RestoreLayeredMix();
+        }
+        else
+        {
+            stationSource.clip = stationClips[currentStation - 1];
+            stationSource.Play();
+            FadeSource(stationSource, stationVolume * masterMusicVolume, stationCrossfadeDuration, ref stationFadeRoutine);
+
+            FadeSource(rhythmSource, 0f, stationCrossfadeDuration, ref rhythmFadeRoutine);
+            FadeSource(menuSource, 0f, stationCrossfadeDuration, ref menuFadeRoutine);
+            FadeSource(gameplaySource, 0f, stationCrossfadeDuration, ref gameplayFadeRoutine);
+        }
+    }
+
+    private void RestoreLayeredMix()
+    {
+        bool isMainMenu = GameManager.Instance == null || GameManager.Instance.State == GameState.MainMenu;
+        FadeSource(rhythmSource, rhythmVolume * masterMusicVolume, stationCrossfadeDuration, ref rhythmFadeRoutine);
+        FadeSource(menuSource, isMainMenu ? menuCushionVolume * masterMusicVolume : 0f, stationCrossfadeDuration, ref menuFadeRoutine);
+        FadeSource(gameplaySource, isMainMenu ? 0f : gameplayCushionVolume * masterMusicVolume, stationCrossfadeDuration, ref gameplayFadeRoutine);
+    }
+
+    private void PlaySwitchStinger()
+    {
+        if (stationSwitchStingers == null || stationSwitchStingers.Length == 0) return;
+        AudioClip stinger = stationSwitchStingers[Random.Range(0, stationSwitchStingers.Length)];
+        stingerSource.PlayOneShot(stinger, stingerVolume * masterMusicVolume);
     }
 
     private void FadeSource(AudioSource source, float targetVolume, float duration, ref Coroutine routine)
@@ -121,7 +196,7 @@ public class MusicManager : MonoBehaviour
         source.volume = targetVolume;
     }
 
-    private AudioSource CreateSource(string sourceName, AudioClip clip)
+    private AudioSource CreateSource(string sourceName, AudioClip clip, bool loop)
     {
         GameObject child = new GameObject(sourceName);
         child.transform.SetParent(transform);
@@ -129,7 +204,7 @@ public class MusicManager : MonoBehaviour
 
         AudioSource source = child.AddComponent<AudioSource>();
         source.clip = clip;
-        source.loop = true;
+        source.loop = loop;
         source.playOnAwake = false;
         source.spatialBlend = 0f; // 2D Stereo
         source.dopplerLevel = 0f;

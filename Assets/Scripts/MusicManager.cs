@@ -63,6 +63,9 @@ public class MusicManager : MonoBehaviour
         gameplaySource = CreateSource("GameplayCushion_AudioSource", gameplayCushionClip, loop: true);
         stationSource = CreateSource("RadioStation_AudioSource", null, loop: true);
         stingerSource = CreateSource("RadioStinger_AudioSource", null, loop: false);
+        // PlayOneShot scales its volumeScale argument by the source's own volume,
+        // so this must stay at 1 (the desired loudness is passed per-call instead).
+        stingerSource.volume = 1f;
     }
 
     private void Start()
@@ -155,9 +158,10 @@ public class MusicManager : MonoBehaviour
     private void RestoreLayeredMix()
     {
         bool isMainMenu = GameManager.Instance == null || GameManager.Instance.State == GameState.MainMenu;
+        bool isGameOver = GameManager.Instance != null && GameManager.Instance.isGameOver;
         FadeSource(rhythmSource, rhythmVolume * masterMusicVolume, stationCrossfadeDuration, ref rhythmFadeRoutine);
         FadeSource(menuSource, isMainMenu ? menuCushionVolume * masterMusicVolume : 0f, stationCrossfadeDuration, ref menuFadeRoutine);
-        FadeSource(gameplaySource, isMainMenu ? 0f : gameplayCushionVolume * masterMusicVolume, stationCrossfadeDuration, ref gameplayFadeRoutine);
+        FadeSource(gameplaySource, (isMainMenu || isGameOver) ? 0f : gameplayCushionVolume * masterMusicVolume, stationCrossfadeDuration, ref gameplayFadeRoutine);
     }
 
     private void PlaySwitchStinger()

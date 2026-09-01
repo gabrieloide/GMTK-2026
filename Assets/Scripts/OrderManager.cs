@@ -254,13 +254,12 @@ public class OrderManager : MonoBehaviour
             : (playerTransform != null ? playerTransform.position : transform.position);
 
         OnOrderFinished?.Invoke(deliveryPosition);
-        AudioManager.Instance.PlaySFX("order_delivered");
+        AudioManager.Instance?.PlaySFX("order_delivered");
 
         deliveriesCompleted++;
-        AudioManager.Instance.PlaySFX("time_bonus");
 
         AddOrder();
-        AudioManager.Instance.PlaySFX("order_new");
+        AudioManager.Instance?.PlaySFX("order_new");
         
         // --- GAME FEEL: Hit Stop & Confetti ---
         StartCoroutine(HitStopRoutine(0.08f));
@@ -347,8 +346,11 @@ public class OrderManager : MonoBehaviour
 
         ps.Play();
 
-        // Destroy after it finishes
+        // Destroy after it finishes. The GameObject destroy doesn't touch the mesh/material
+        // assets referenced by the renderer, so they'd otherwise leak every delivery.
         Destroy(confettiObj, 3f);
+        Destroy(quad, 3f);
+        Destroy(confettiMaterial, 3f);
     }
 
     void OnDrawGizmos()

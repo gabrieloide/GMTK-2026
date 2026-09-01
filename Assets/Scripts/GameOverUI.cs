@@ -40,12 +40,12 @@ public class GameOverUI : MonoBehaviour
         shownAt = Time.unscaledTime;
         if (gameOverPanel != null) gameOverPanel.SetActive(true);
         if (finalScoreText != null && GameManager.Instance != null) finalScoreText.text = $"Final Score: {GameManager.Instance.Score}";
-        AudioManager.Instance.PlaySFX("game_over");
+        AudioManager.Instance?.PlaySFX("game_over");
     }
 
     public void Restart()
     {
-        AudioManager.Instance.PlaySFX("ui_restart");
+        AudioManager.Instance?.PlaySFX("ui_restart");
         TransitionManager.Instance.PlayTransition(() => 
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);

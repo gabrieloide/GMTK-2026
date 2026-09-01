@@ -24,7 +24,7 @@ public class OrderHolder : MonoBehaviour
             isActive = false;
             isCurrent = false;
             if (orderDestination != null) orderDestination.isPickedUp = true;
-            AudioManager.Instance.PlaySFX("order_pickup");
+            AudioManager.Instance?.PlaySFX("order_pickup");
             OnPickup?.Invoke(pickupPoint);
         }
     }

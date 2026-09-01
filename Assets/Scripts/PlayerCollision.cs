@@ -87,7 +87,7 @@ public class PlayerCollision : MonoBehaviour
         opositeDirection.Normalize();
 
         playerController.ApplyKnockback(opositeDirection, knockbackForce, knockbackDuration);
-        AudioManager.Instance.PlaySFX("car_hit");
+        AudioManager.Instance?.PlaySFX("car_hit");
 
         float force = Mathf.Clamp(collision.relativeVelocity.magnitude * hitImpulseScale, hitImpulseMin, hitImpulseMax);
         Debug.Log($"<color=orange>[Crash Feedback]</color> Choque contra: '{collision.gameObject.name}', Fuerza Shake: {force:F2}");

@@ -18,11 +18,17 @@ public class TimerManager : MonoBehaviour
     // lets the HUD punch/shake the clock in sync with the beep instead of just recoloring it.
     public event Action<int> OnLowTimeTick;
 
+    private void Awake()
+    {
+        // Subscribed in Awake (guaranteed to run for every object before any Start)
+        // so OrderManager.Start() -> AddOrder() can never fire this event before we're listening.
+        OrderManager.OnDeliveryTimeLimitSet += ResetTimeForNextDelivery;
+    }
+
     private void Start()
     {
         timeRemaining = startTimer;
         currentTime = timeRemaining;
-        OrderManager.OnDeliveryTimeLimitSet += ResetTimeForNextDelivery;
     }
 
     private void OnDestroy()
@@ -49,7 +55,7 @@ public class TimerManager : MonoBehaviour
             if (tick != lastWarningTick)
             {
                 lastWarningTick = tick;
-                AudioManager.Instance.PlaySFX("low_time_warning");
+                AudioManager.Instance?.PlaySFX("low_time_warning");
                 OnLowTimeTick?.Invoke(tick);
             }
         }

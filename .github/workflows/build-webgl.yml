@@ -39,6 +39,7 @@ jobs:
       - name: Prepare build for GitHub Pages and Itch.io
         run: |
           sudo apt-get update && sudo apt-get install -y brotli
+          sudo chown -R $USER:$USER build/
           if [ -d "build/WebGL/WebGL/Build" ]; then
             cd build/WebGL/WebGL
             for f in Build/*.br; do

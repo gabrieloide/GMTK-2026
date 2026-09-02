@@ -36,7 +36,7 @@ jobs:
           unityVersion: 6000.5.4f1
           targetPlatform: WebGL
 
-      - name: Prepare build for GitHub Pages
+      - name: Prepare build for GitHub Pages and Itch.io
         run: |
           sudo apt-get update && sudo apt-get install -y brotli
           if [ -d "build/WebGL/WebGL/Build" ]; then
@@ -54,6 +54,15 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build/WebGL/WebGL
+
+      - name: Deploy to Itch.io with Butler
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          curl -L -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
+          unzip -q butler.zip -d bin/
+          chmod +x bin/butler
+          ./bin/butler push build/WebGL/WebGL virterex/fast-car:html5 --userversion ${{ github.sha }}
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4

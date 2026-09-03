@@ -26,6 +26,9 @@ jobs:
           restore-keys: |
             Library-webgl-
 
+      - name: Clean Bee build cache
+        run: rm -rf Library/Bee
+
       - name: Build
         uses: game-ci/unity-builder@v4
         env:

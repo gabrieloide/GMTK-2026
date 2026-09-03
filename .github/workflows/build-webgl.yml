@@ -51,6 +51,12 @@ jobs:
               rm "$f"
             done
             sed -i 's/\.br//g' index.html
+            if [ -f "TemplateData/style.css" ]; then
+              echo "#unity-footer { display: none !important; }" >> TemplateData/style.css
+              echo "#unity-logo { display: none !important; }" >> TemplateData/style.css
+              echo "#unity-container.unity-desktop { position: absolute !important; width: 100% !important; height: 100% !important; top: 0 !important; left: 0 !important; transform: none !important; }" >> TemplateData/style.css
+              echo "#unity-canvas { width: 100% !important; height: 100% !important; }" >> TemplateData/style.css
+            fi
           fi
 
       - name: Deploy to GitHub Pages
